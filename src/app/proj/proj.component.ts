@@ -48,7 +48,7 @@ export class ProjComponent implements OnInit, OnDestroy {
   async carregarProjetos() {
     this.loading = true;
     try {
-      const response: any = await this.http.get('http://localhost:3000/api/projs').toPromise();
+      const response: any = await this.http.get('https://adubadica.vercel.app/api/projs').toPromise();
       this.projetos = Array.isArray(response) ? response : [];
       console.log('Projetos carregados:', this.projetos);
     } catch (error) {
@@ -90,11 +90,11 @@ export class ProjComponent implements OnInit, OnDestroy {
     try {
       if (this.editingProjeto) {
         // Atualizar projeto existente
-        await this.http.put(`http://localhost:3000/api/proj/${this.editingProjeto.id}`, this.novoProjeto).toPromise();
+        await this.http.put(`https://adubadica.vercel.app/api/proj/${this.editingProjeto.id}`, this.novoProjeto).toPromise();
         console.log('Projeto atualizado:', this.novoProjeto);
       } else {
         // Criar novo projeto
-        await this.http.post('http://localhost:3000/api/proj', this.novoProjeto).toPromise();
+        await this.http.post('https://adubadica.vercel.app/api/proj', this.novoProjeto).toPromise();
         console.log('Projeto criado:', this.novoProjeto);
       }
 
@@ -110,7 +110,7 @@ export class ProjComponent implements OnInit, OnDestroy {
   async deletarProjeto(projeto: any) {
     if (confirm(`Tem certeza que deseja deletar o projeto "${projeto.nome}"?`)) {
       try {
-        await this.http.delete(`http://localhost:3000/api/proj/${projeto.id}`).toPromise();
+        await this.http.delete(`https://adubadica.vercel.app/api/proj/${projeto.id}`).toPromise();
         console.log('Projeto deletado:', projeto);
         this.carregarProjetos();
         alert('Projeto deletado com sucesso!');

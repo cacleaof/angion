@@ -64,7 +64,7 @@ export class TaskComponent implements OnInit, OnDestroy {
   async carregarTarefas() {
     this.loading = true;
     try {
-      const response: any = await this.http.get('http://localhost:3000/api/tasks').toPromise();
+      const response: any = await this.http.get('https://adubadica.vercel.app/api/tasks').toPromise();
       this.tarefas = Array.isArray(response) ? response : [];
       console.log('Tarefas carregadas:', this.tarefas);
     } catch (error) {
@@ -77,7 +77,7 @@ export class TaskComponent implements OnInit, OnDestroy {
 
   async carregarProjetos() {
     try {
-      const response: any = await this.http.get('http://localhost:3000/api/projs').toPromise();
+      const response: any = await this.http.get('https://adubadica.vercel.app/api/projs').toPromise();
       this.projetos = Array.isArray(response) ? response : [];
       console.log('Projetos carregados:', this.projetos);
     } catch (error) {
@@ -118,7 +118,7 @@ export class TaskComponent implements OnInit, OnDestroy {
     if (confirm(`Tem certeza que deseja deletar ${this.tarefasSelecionadas.size} tarefa(s)?`)) {
       try {
         const promises = Array.from(this.tarefasSelecionadas).map(id =>
-          this.http.delete(`http://localhost:3000/api/task/${id}`).toPromise()
+          this.http.delete(`https://adubadica.vercel.app/api/task/${id}`).toPromise()
         );
 
         await Promise.all(promises);
@@ -144,7 +144,7 @@ export class TaskComponent implements OnInit, OnDestroy {
       const promises = Array.from(this.tarefasSelecionadas).map(id => {
         const tarefa = this.tarefas.find(t => t.id === id);
         if (tarefa) {
-          return this.http.put(`http://localhost:3000/api/task/${id}`, {
+          return this.http.put(`https://adubadica.vercel.app/api/task/${id}`, {
             ...tarefa,
             status: 'CONCLUIDA'
           }).toPromise();
@@ -207,11 +207,11 @@ export class TaskComponent implements OnInit, OnDestroy {
     try {
       if (this.editingTarefa) {
         // Atualizar tarefa existente
-        await this.http.put(`http://localhost:3000/api/task/${this.editingTarefa.id}`, this.novaTarefa).toPromise();
+        await this.http.put(`https://adubadica.vercel.app/api/task/${this.editingTarefa.id}`, this.novaTarefa).toPromise();
         console.log('Tarefa atualizada:', this.novaTarefa);
       } else {
         // Criar nova tarefa
-        await this.http.post('http://localhost:3000/api/task', this.novaTarefa).toPromise();
+        await this.http.post('https://adubadica.vercel.app/api/task', this.novaTarefa).toPromise();
         console.log('Tarefa criada:', this.novaTarefa);
       }
 
@@ -227,7 +227,7 @@ export class TaskComponent implements OnInit, OnDestroy {
   async alterarStatus(tarefa: any) {
     try {
       const novoStatus = tarefa.status === 'CONCLUIDA' ? 'PENDENTE' : 'CONCLUIDA';
-      await this.http.put(`http://localhost:3000/api/task/${tarefa.id}`, {
+      await this.http.put(`https://adubadica.vercel.app/api/task/${tarefa.id}`, {
         ...tarefa,
         status: novoStatus
       }).toPromise();
@@ -243,7 +243,7 @@ export class TaskComponent implements OnInit, OnDestroy {
   async deletarTarefa(tarefa: any) {
     if (confirm(`Tem certeza que deseja deletar a tarefa "${tarefa.nome}"?`)) {
       try {
-        await this.http.delete(`http://localhost:3000/api/task/${tarefa.id}`).toPromise();
+        await this.http.delete(`https://adubadica.vercel.app/api/task/${tarefa.id}`).toPromise();
         console.log('Tarefa deletada:', tarefa);
         this.carregarTarefas();
         alert('Tarefa deletada com sucesso!');
