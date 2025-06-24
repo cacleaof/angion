@@ -43,7 +43,7 @@ export class HomePage implements OnInit, OnDestroy {
   async carregarDespesas() {
     this.loading = true;
     try {
-      const response: any = await this.http.get('https://adubadica.vercel.app/api').toPromise();
+      const response: any = await this.http.get('https://adubadica.vercel.app/api/despesas').toPromise();
       this.despesas = Array.isArray(response) ? response : [];
       console.log('Despesas carregadas:', this.despesas);
     } catch (error) {
@@ -107,11 +107,11 @@ export class HomePage implements OnInit, OnDestroy {
     try {
       if (this.editingDespesa) {
         // Atualizar despesa existente
-        await this.http.put(`http://localhost:3000/api/despesas/${this.editingDespesa.id}`, this.novaDespesa).toPromise();
+        await this.http.put(`http://localhost:3000/api/despesa/${this.editingDespesa.id}`, this.novaDespesa).toPromise();
         console.log('Despesa atualizada:', this.novaDespesa);
       } else {
         // Criar nova despesa
-        await this.http.post('http://localhost:3000/api/despesas', this.novaDespesa).toPromise();
+        await this.http.post('http://localhost:3000/api/despesa', this.novaDespesa).toPromise();
         console.log('Despesa criada:', this.novaDespesa);
       }
 
@@ -127,7 +127,7 @@ export class HomePage implements OnInit, OnDestroy {
   async deletarDespesa(despesa: any) {
     if (confirm(`Tem certeza que deseja deletar a despesa "${despesa.nome}"?`)) {
       try {
-        await this.http.delete(`http://localhost:3000/api/despesas/${despesa.id}`).toPromise();
+        await this.http.delete(`http://localhost:3000/api/despesa/${despesa.id}`).toPromise();
         console.log('Despesa deletada:', despesa);
         this.carregarDespesas();
         alert('Despesa deletada com sucesso!');
@@ -141,7 +141,7 @@ export class HomePage implements OnInit, OnDestroy {
   async marcarComoPaga(despesa: any) {
     try {
       const novoStatus = !despesa.pago;
-      await this.http.put(`http://localhost:3000/api/despesas/${despesa.id}`, {
+      await this.http.put(`http://localhost:3000/api/despesa/${despesa.id}`, {
         ...despesa,
         pago: novoStatus
       }).toPromise();

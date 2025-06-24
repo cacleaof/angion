@@ -34,7 +34,7 @@ export class DashboardPage implements OnInit, OnDestroy {
   async carregarDespesas() {
     this.loading = true;
     try {
-      const response: any = await this.http.get('https://adubadica.vercel.app/api/').toPromise();
+      const response: any = await this.http.get('https://adubadica.vercel.app/api/despesas').toPromise();
       this.despesas = Array.isArray(response) ? response : [];
       console.log('Despesas carregadas:', this.despesas);
     } catch (error) {

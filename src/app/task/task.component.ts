@@ -211,7 +211,7 @@ export class TaskComponent implements OnInit, OnDestroy {
         console.log('Tarefa atualizada:', this.novaTarefa);
       } else {
         // Criar nova tarefa
-        await this.http.post('https://adubadica.vercel.app/api/task', this.novaTarefa).toPromise();
+        await this.http.post('https://adubadica.vercel.app/api/task/', this.novaTarefa).toPromise();
         console.log('Tarefa criada:', this.novaTarefa);
       }
 

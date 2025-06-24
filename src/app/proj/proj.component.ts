@@ -94,7 +94,7 @@ export class ProjComponent implements OnInit, OnDestroy {
         console.log('Projeto atualizado:', this.novoProjeto);
       } else {
         // Criar novo projeto
-        await this.http.post('https://adubadica.vercel.app/api/proj', this.novoProjeto).toPromise();
+        await this.http.post('https://adubadica.vercel.app/api/proj/', this.novoProjeto).toPromise();
         console.log('Projeto criado:', this.novoProjeto);
       }
 
