@@ -106,20 +106,6 @@ export class HomePage implements OnInit, OnDestroy {
 
     try {
       if (this.editingDespesa) {
-        // Atualizar despesa existente
-<<<<<<< HEAD
-        await this.http.put(`http://localhost:3000/api/despesa/${this.editingDespesa.id}`, this.novaDespesa).toPromise();
-        console.log('Despesa atualizada:', this.novaDespesa);
-      } else {
-        // Criar nova despesa
-        await this.http.post('http://localhost:3000/api/despesa', this.novaDespesa).toPromise();
-=======
-        await this.http.put(`https://adubadica.vercel.app/api/despesa/${this.editingDespesa.id}`, this.novaDespesa).toPromise();
-        console.log('Despesa atualizada:', this.novaDespesa);
-      } else {
-        // Criar nova despesa
-        await this.http.post('https://adubadica.vercel.app/api/despesas', this.novaDespesa).toPromise();
->>>>>>> c4c39a83da8ca69ed864374d13fbe86a8570ab71
         console.log('Despesa criada:', this.novaDespesa);
       }
 
@@ -135,11 +121,6 @@ export class HomePage implements OnInit, OnDestroy {
   async deletarDespesa(despesa: any) {
     if (confirm(`Tem certeza que deseja deletar a despesa "${despesa.nome}"?`)) {
       try {
-<<<<<<< HEAD
-        await this.http.delete(`http://localhost:3000/api/despesa/${despesa.id}`).toPromise();
-=======
-        await this.http.delete(`https://adubadica.vercel.app/api/despesa/${despesa.id}`).toPromise();
->>>>>>> c4c39a83da8ca69ed864374d13fbe86a8570ab71
         console.log('Despesa deletada:', despesa);
         this.carregarDespesas();
         alert('Despesa deletada com sucesso!');
@@ -153,11 +134,7 @@ export class HomePage implements OnInit, OnDestroy {
   async marcarComoPaga(despesa: any) {
     try {
       const novoStatus = !despesa.pago;
-<<<<<<< HEAD
-      await this.http.put(`http://localhost:3000/api/despesa/${despesa.id}`, {
-=======
       await this.http.put(`https://adubadica.vercel.app/api/despesa/${despesa.id}`, {
->>>>>>> c4c39a83da8ca69ed864374d13fbe86a8570ab71
         ...despesa,
         pago: novoStatus
       }).toPromise();
