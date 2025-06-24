@@ -1,0 +1,281 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
+import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AccessibilityService } from '../services/accessibility.service';
+
+@Component({
+  selector: 'app-task',
+  templateUrl: 'task.component.html',
+  styleUrls: ['task.component.scss'],
+  standalone: true,
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, CommonModule, FormsModule],
+})
+export class TaskComponent implements OnInit, OnDestroy {
+  tarefas: any[] = [];
+  projetos: any[] = [];
+  loading: boolean = false;
+  showModal: boolean = false;
+  editingTarefa: any = null;
+  modoEdicao: boolean = false;
+  tarefasSelecionadas: Set<number> = new Set();
+  novaTarefa: any = {
+    nome: '',
+    descricao: '',
+    tipo: '',
+    uid: '',
+    proj: '',
+    data: '',
+    status: 'pendente',
+    prioridade: 'media'
+  };
+
+  prioridades = [
+    { valor: 1, nome: 'Baixa' },
+    { valor: 2, nome: 'Média' },
+    { valor: 3, nome: 'Alta' },
+    { valor: 4, nome: 'Urgente' }
+  ];
+
+  statusOptions = ['PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDA', 'CANCELADA'];
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private accessibilityService: AccessibilityService
+  ) {}
+
+  ngOnInit() {
+    this.carregarTarefas();
+    this.carregarProjetos();
+    this.accessibilityService.setupComponentAccessibility();
+  }
+
+  ngOnDestroy() {
+    this.accessibilityService.clearFocusOnDestroy();
+  }
+
+  navegarParaHome() {
+    this.router.navigate(['/dashboard']);
+  }
+
+  async carregarTarefas() {
+    this.loading = true;
+    try {
+      const response: any = await this.http.get('http://localhost:3000/api/tasks').toPromise();
+      this.tarefas = Array.isArray(response) ? response : [];
+      console.log('Tarefas carregadas:', this.tarefas);
+    } catch (error) {
+      console.error('Erro ao carregar tarefas:', error);
+      alert('Erro ao carregar tarefas');
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async carregarProjetos() {
+    try {
+      const response: any = await this.http.get('http://localhost:3000/api/projs').toPromise();
+      this.projetos = Array.isArray(response) ? response : [];
+      console.log('Projetos carregados:', this.projetos);
+    } catch (error) {
+      console.error('Erro ao carregar projetos:', error);
+      // Não mostra alerta pois não é crítico para o funcionamento das tarefas
+    }
+  }
+
+  alternarModoEdicao() {
+    this.modoEdicao = !this.modoEdicao;
+    if (!this.modoEdicao) {
+      this.tarefasSelecionadas.clear();
+    }
+  }
+
+  selecionarTarefa(tarefaId: number) {
+    if (this.tarefasSelecionadas.has(tarefaId)) {
+      this.tarefasSelecionadas.delete(tarefaId);
+    } else {
+      this.tarefasSelecionadas.add(tarefaId);
+    }
+  }
+
+  selecionarTodas() {
+    if (this.tarefasSelecionadas.size === this.tarefas.length) {
+      this.tarefasSelecionadas.clear();
+    } else {
+      this.tarefas.forEach(tarefa => this.tarefasSelecionadas.add(tarefa.id));
+    }
+  }
+
+  async deletarSelecionadas() {
+    if (this.tarefasSelecionadas.size === 0) {
+      alert('Selecione pelo menos uma tarefa para deletar');
+      return;
+    }
+
+    if (confirm(`Tem certeza que deseja deletar ${this.tarefasSelecionadas.size} tarefa(s)?`)) {
+      try {
+        const promises = Array.from(this.tarefasSelecionadas).map(id =>
+          this.http.delete(`http://localhost:3000/api/task/${id}`).toPromise()
+        );
+
+        await Promise.all(promises);
+        console.log('Tarefas deletadas:', this.tarefasSelecionadas);
+        this.tarefasSelecionadas.clear();
+        this.modoEdicao = false;
+        this.carregarTarefas();
+        alert('Tarefas deletadas com sucesso!');
+      } catch (error) {
+        console.error('Erro ao deletar tarefas:', error);
+        alert('Erro ao deletar tarefas');
+      }
+    }
+  }
+
+  async marcarComoConcluidas() {
+    if (this.tarefasSelecionadas.size === 0) {
+      alert('Selecione pelo menos uma tarefa');
+      return;
+    }
+
+    try {
+      const promises = Array.from(this.tarefasSelecionadas).map(id => {
+        const tarefa = this.tarefas.find(t => t.id === id);
+        if (tarefa) {
+          return this.http.put(`http://localhost:3000/api/task/${id}`, {
+            ...tarefa,
+            status: 'CONCLUIDA'
+          }).toPromise();
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(promises);
+      console.log('Tarefas marcadas como concluídas:', this.tarefasSelecionadas);
+      this.tarefasSelecionadas.clear();
+      this.modoEdicao = false;
+      this.carregarTarefas();
+      alert('Tarefas marcadas como concluídas!');
+    } catch (error) {
+      console.error('Erro ao marcar tarefas:', error);
+      alert('Erro ao marcar tarefas');
+    }
+  }
+
+  abrirModal(tarefa?: any) {
+    if (tarefa) {
+      this.editingTarefa = tarefa;
+      this.novaTarefa = {
+        nome: tarefa.nome || '',
+        descricao: tarefa.descricao || '',
+        tipo: tarefa.tipo || 'TAREFA',
+        uid: tarefa.uid || 1,
+        proj: tarefa.proj || '',
+        data: tarefa.data || '',
+        status: tarefa.status || 'PENDENTE',
+        prioridade: tarefa.prioridade || 2
+      };
+    } else {
+      this.editingTarefa = null;
+      this.novaTarefa = {
+        nome: '',
+        descricao: '',
+        tipo: 'TAREFA',
+        uid: 1,
+        proj: '',
+        data: '',
+        status: 'PENDENTE',
+        prioridade: 2
+      };
+    }
+    this.showModal = true;
+  }
+
+  fecharModal() {
+    this.showModal = false;
+    this.editingTarefa = null;
+  }
+
+  async salvarTarefa() {
+    if (!this.novaTarefa.nome) {
+      alert('Nome da tarefa é obrigatório');
+      return;
+    }
+
+    try {
+      if (this.editingTarefa) {
+        // Atualizar tarefa existente
+        await this.http.put(`http://localhost:3000/api/task/${this.editingTarefa.id}`, this.novaTarefa).toPromise();
+        console.log('Tarefa atualizada:', this.novaTarefa);
+      } else {
+        // Criar nova tarefa
+        await this.http.post('http://localhost:3000/api/task', this.novaTarefa).toPromise();
+        console.log('Tarefa criada:', this.novaTarefa);
+      }
+
+      this.fecharModal();
+      this.carregarTarefas();
+      alert(this.editingTarefa ? 'Tarefa atualizada com sucesso!' : 'Tarefa criada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar tarefa:', error);
+      alert('Erro ao salvar tarefa');
+    }
+  }
+
+  async alterarStatus(tarefa: any) {
+    try {
+      const novoStatus = tarefa.status === 'CONCLUIDA' ? 'PENDENTE' : 'CONCLUIDA';
+      await this.http.put(`http://localhost:3000/api/task/${tarefa.id}`, {
+        ...tarefa,
+        status: novoStatus
+      }).toPromise();
+
+      tarefa.status = novoStatus;
+      console.log('Status da tarefa alterado:', tarefa);
+    } catch (error) {
+      console.error('Erro ao alterar status da tarefa:', error);
+      alert('Erro ao alterar status da tarefa');
+    }
+  }
+
+  async deletarTarefa(tarefa: any) {
+    if (confirm(`Tem certeza que deseja deletar a tarefa "${tarefa.nome}"?`)) {
+      try {
+        await this.http.delete(`http://localhost:3000/api/task/${tarefa.id}`).toPromise();
+        console.log('Tarefa deletada:', tarefa);
+        this.carregarTarefas();
+        alert('Tarefa deletada com sucesso!');
+      } catch (error) {
+        console.error('Erro ao deletar tarefa:', error);
+        alert('Erro ao deletar tarefa');
+      }
+    }
+  }
+
+  getPrioridadeColor(prioridade: number): string {
+    switch (prioridade) {
+      case 4: return '#e74c3c'; // Urgente
+      case 3: return '#e67e22'; // Alta
+      case 2: return '#f39c12'; // Média
+      case 1: return '#27ae60'; // Baixa
+      default: return '#95a5a6';
+    }
+  }
+
+  getPrioridadeNome(prioridade: number): string {
+    const prioridadeObj = this.prioridades.find(p => p.valor === prioridade);
+    return prioridadeObj ? prioridadeObj.nome : 'Média';
+  }
+
+  getProjetoNome(projId: string): string {
+    if (!projId) return '';
+    const projeto = this.projetos.find(p => p.id == projId);
+    return projeto ? projeto.nome : projId;
+  }
+
+  isConcluida(tarefa: any): boolean {
+    return tarefa.status === 'CONCLUIDA';
+  }
+}

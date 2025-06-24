@@ -1,0 +1,234 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home">
+        Home
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      Tarefas
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Tarefas</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="header-actions">
+      <h2>Lista de Tarefas</h2>
+      <div class="action-buttons">
+        <ion-button
+          (click)="alternarModoEdicao()"
+          [color]="modoEdicao ? 'warning' : 'secondary'"
+          size="small"
+          [attr.aria-label]="modoEdicao ? 'Sair do modo de edição' : 'Entrar no modo de edição'"
+        >
+          {{ modoEdicao ? 'Sair da Edição' : 'Editar' }}
+        </ion-button>
+        <ion-button (click)="abrirModal()" color="primary" size="small" aria-label="Adicionar nova tarefa">
+          Nova Tarefa
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Controles de Edição em Massa -->
+    <div *ngIf="modoEdicao" class="bulk-actions">
+      <div class="bulk-header">
+        <ion-button
+          (click)="selecionarTodas()"
+          color="medium"
+          size="small"
+          fill="outline"
+          [attr.aria-label]="tarefasSelecionadas.size === tarefas.length ? 'Desmarcar todas as tarefas' : 'Selecionar todas as tarefas'"
+        >
+          {{ tarefasSelecionadas.size === tarefas.length ? 'Desmarcar Todas' : 'Selecionar Todas' }}
+        </ion-button>
+        <span class="selected-count">
+          {{ tarefasSelecionadas.size }} tarefa(s) selecionada(s)
+        </span>
+      </div>
+
+      <div class="bulk-buttons" *ngIf="tarefasSelecionadas.size > 0">
+        <ion-button
+          (click)="marcarComoConcluidas()"
+          color="success"
+          size="small"
+          aria-label="Marcar tarefas selecionadas como concluídas"
+        >
+          Marcar como Concluídas
+        </ion-button>
+        <ion-button
+          (click)="deletarSelecionadas()"
+          color="danger"
+          size="small"
+          aria-label="Deletar tarefas selecionadas"
+        >
+          Deletar Selecionadas
+        </ion-button>
+      </div>
+    </div>
+
+    <ion-button expand="block" (click)="carregarTarefas()" [disabled]="loading" aria-label="Atualizar lista de tarefas">
+      {{ loading ? 'Carregando...' : 'Atualizar' }}
+    </ion-button>
+
+    <div *ngIf="loading" class="loading">
+      Carregando tarefas...
+    </div>
+
+    <ion-list *ngIf="!loading && tarefas.length > 0">
+      <ion-item *ngFor="let tarefa of tarefas" [class.selected]="tarefasSelecionadas.has(tarefa.id)">
+        <!-- Checkbox para seleção em massa -->
+        <ion-checkbox
+          *ngIf="modoEdicao"
+          slot="start"
+          [checked]="tarefasSelecionadas.has(tarefa.id)"
+          (ionChange)="selecionarTarefa(tarefa.id)"
+          class="selection-checkbox"
+          [attr.aria-label]="'Selecionar tarefa ' + tarefa.nome"
+        ></ion-checkbox>
+
+        <!-- Checkbox para status da tarefa -->
+        <ion-checkbox
+          *ngIf="!modoEdicao"
+          slot="start"
+          [checked]="isConcluida(tarefa)"
+          (ionChange)="alterarStatus(tarefa)"
+          [attr.aria-label]="'Marcar tarefa ' + tarefa.nome + ' como concluída'"
+        ></ion-checkbox>
+
+        <ion-label [class.concluida]="isConcluida(tarefa)">
+          <h2>{{ tarefa.nome }}</h2>
+          <p *ngIf="tarefa.descricao">{{ tarefa.descricao }}</p>
+          <p *ngIf="tarefa.prioridade" class="prioridade" [style.color]="getPrioridadeColor(tarefa.prioridade)">
+            Prioridade: {{ getPrioridadeNome(tarefa.prioridade) }}
+          </p>
+          <p *ngIf="tarefa.data">Data: {{ tarefa.data | date:'dd/MM/yyyy' }}</p>
+          <p *ngIf="tarefa.proj" class="projeto">Projeto: {{ getProjetoNome(tarefa.proj) }}</p>
+          <p *ngIf="tarefa.status" class="status">Status: {{ tarefa.status }}</p>
+        </ion-label>
+
+        <!-- Botões de ação individuais (apenas quando não está em modo de edição) -->
+        <div *ngIf="!modoEdicao" slot="end">
+          <ion-button fill="clear" (click)="abrirModal(tarefa)" color="primary" [attr.aria-label]="'Editar tarefa ' + tarefa.nome">
+            Editar
+          </ion-button>
+          <ion-button fill="clear" (click)="deletarTarefa(tarefa)" color="danger" [attr.aria-label]="'Deletar tarefa ' + tarefa.nome">
+            Deletar
+          </ion-button>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <div *ngIf="!loading && tarefas.length === 0" class="no-data">
+      <p>Nenhuma tarefa encontrada.</p>
+    </div>
+  </div>
+</ion-content>
+
+<!-- Modal para criar/editar tarefa -->
+<ion-modal [isOpen]="showModal" (didDismiss)="fecharModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ editingTarefa ? 'Editar Tarefa' : 'Nova Tarefa' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="fecharModal()" aria-label="Cancelar">Cancelar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <form (ngSubmit)="salvarTarefa()">
+        <!-- Campo obrigatório primeiro -->
+        <ion-input
+          label="Nome da Tarefa *"
+          [(ngModel)]="novaTarefa.nome"
+          name="nome"
+          required
+          placeholder="Digite o nome da tarefa"
+          class="required-field"
+        ></ion-input>
+
+        <!-- Descrição -->
+        <ion-textarea
+          label="Descrição"
+          [(ngModel)]="novaTarefa.descricao"
+          name="descricao"
+          placeholder="Digite a descrição da tarefa (opcional)"
+          rows="3"
+        ></ion-textarea>
+
+        <!-- Linha com Prioridade e Status -->
+        <div class="form-row">
+          <ion-select
+            label="Prioridade"
+            [(ngModel)]="novaTarefa.prioridade"
+            name="prioridade"
+            placeholder="Selecione a prioridade"
+            class="form-half"
+          >
+            <ion-select-option *ngFor="let prioridade of prioridades" [value]="prioridade.valor">
+              {{ prioridade.nome }}
+            </ion-select-option>
+          </ion-select>
+
+          <ion-select
+            label="Status"
+            [(ngModel)]="novaTarefa.status"
+            name="status"
+            placeholder="Selecione o status"
+            class="form-half"
+          >
+            <ion-select-option *ngFor="let status of statusOptions" [value]="status">
+              {{ status }}
+            </ion-select-option>
+          </ion-select>
+        </div>
+
+        <!-- Linha com Data e Projeto -->
+        <div class="form-row">
+          <ion-input
+            label="Data"
+            [(ngModel)]="novaTarefa.data"
+            name="data"
+            type="date"
+            placeholder="Selecione a data"
+            class="form-half"
+          ></ion-input>
+
+          <ion-select
+            label="Projeto"
+            [(ngModel)]="novaTarefa.proj"
+            name="proj"
+            placeholder="Selecione o projeto"
+            class="form-half"
+          >
+            <ion-select-option value="">Nenhum projeto</ion-select-option>
+            <ion-select-option *ngFor="let projeto of projetos" [value]="projeto.id">
+              {{ projeto.nome }}
+            </ion-select-option>
+          </ion-select>
+        </div>
+
+        <!-- Informações adicionais -->
+        <div class="form-info">
+          <p><small>* Campos obrigatórios</small></p>
+          <p><small>Tipo: {{ novaTarefa.tipo }}</small></p>
+          <p><small>Usuário ID: {{ novaTarefa.uid }}</small></p>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="form-actions">
+          <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingTarefa ? 'Atualizar tarefa' : 'Criar tarefa'">
+            {{ editingTarefa ? 'Atualizar' : 'Criar' }} Tarefa
+          </ion-button>
+        </div>
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>

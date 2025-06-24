@@ -1,18 +1,19 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonInput, IonTextarea } from '@ionic/angular/standalone';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
+import { IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonTextarea, IonHeader, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { AccessibilityService } from '../services/accessibility.service';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonInput, IonTextarea, CommonModule, FormsModule],
+  selector: 'app-despesa',
+  templateUrl: './despesa.component.html',
+  styleUrls: ['./despesa.component.scss'],
+  standalone: true,
+  imports: [IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonTextarea, IonHeader, IonToolbar, IonTitle, IonButtons, CommonModule, FormsModule],
 })
-export class HomePage implements OnInit, OnDestroy {
+export class DespesaComponent implements OnInit {
   despesas: any[] = [];
   loading: boolean = false;
   showModal: boolean = false;
@@ -21,30 +22,34 @@ export class HomePage implements OnInit, OnDestroy {
     nome: '',
     descricao: '',
     valor: '',
+    venc: '',
     imagem: '',
     pago: false
   };
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private accessibilityService: AccessibilityService
-  ) {}
+  constructor(private http: HttpClient,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.carregarDespesas();
-    this.accessibilityService.setupComponentAccessibility();
   }
 
-  ngOnDestroy() {
-    this.accessibilityService.clearFocusOnDestroy();
+  navegarParaHome() {
+    this.router.navigate(['/dashboard']);
   }
 
   async carregarDespesas() {
     this.loading = true;
     try {
-      const response: any = await this.http.get('http://localhost:3000/api/despesas').toPromise();
+      const response: any = await firstValueFrom(this.http.get('http://localhost:3000/api/despesas'));
       this.despesas = Array.isArray(response) ? response : [];
+      // Ordenar pelo vencimento (do mais próximo para o mais distante)
+      this.despesas.sort((a, b) => {
+        if (!a.venc) return 1;
+        if (!b.venc) return -1;
+        return new Date(a.venc).getTime() - new Date(b.venc).getTime();
+      });
       console.log('Despesas carregadas:', this.despesas);
     } catch (error) {
       console.error('Erro ao carregar despesas:', error);
@@ -54,29 +59,23 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
-  navegarParaHome() {
-    this.router.navigate(['/dashboard']);
-  }
-
-  navegarParaDespesas() {
-    this.router.navigate(['/home']);
-  }
-
-  navegarParaProjetos() {
-    this.router.navigate(['/proj']);
-  }
-
-  navegarParaTarefas() {
-    this.router.navigate(['/task']);
-  }
-
   abrirModal(despesa?: any) {
     if (despesa) {
       this.editingDespesa = despesa;
+      // Converter a data para o formato YYYY-MM-DD para o input type="date"
+      let dataVencimento = '';
+      if (despesa.venc) {
+        const data = new Date(despesa.venc);
+        if (!isNaN(data.getTime())) {
+          dataVencimento = data.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        }
+      }
+
       this.novaDespesa = {
         nome: despesa.nome || '',
         descricao: despesa.descricao || '',
         valor: despesa.valor || '',
+        venc: dataVencimento,
         imagem: despesa.imagem || '',
         pago: despesa.pago || false
       };
@@ -86,6 +85,7 @@ export class HomePage implements OnInit, OnDestroy {
         nome: '',
         descricao: '',
         valor: '',
+        venc: '',
         imagem: '',
         pago: false
       };
@@ -105,14 +105,25 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     try {
+      // Preparar dados para salvar
+      const dadosParaSalvar = { ...this.novaDespesa };
+
+      // Formatar a data de vencimento se existir
+      if (dadosParaSalvar.venc) {
+        const data = new Date(dadosParaSalvar.venc);
+        if (!isNaN(data.getTime())) {
+          dadosParaSalvar.venc = data.toISOString().split('T')[0];
+        }
+      }
+
       if (this.editingDespesa) {
         // Atualizar despesa existente
-        await this.http.put(`http://localhost:3000/api/despesas/${this.editingDespesa.id}`, this.novaDespesa).toPromise();
-        console.log('Despesa atualizada:', this.novaDespesa);
+        await firstValueFrom(this.http.put(`http://localhost:3000/api/despesas/${this.editingDespesa.id}`, dadosParaSalvar));
+        console.log('Despesa atualizada:', dadosParaSalvar);
       } else {
         // Criar nova despesa
-        await this.http.post('http://localhost:3000/api/despesas', this.novaDespesa).toPromise();
-        console.log('Despesa criada:', this.novaDespesa);
+        await firstValueFrom(this.http.post('http://localhost:3000/api/despesas', dadosParaSalvar));
+        console.log('Despesa criada:', dadosParaSalvar);
       }
 
       this.fecharModal();
@@ -127,7 +138,7 @@ export class HomePage implements OnInit, OnDestroy {
   async deletarDespesa(despesa: any) {
     if (confirm(`Tem certeza que deseja deletar a despesa "${despesa.nome}"?`)) {
       try {
-        await this.http.delete(`http://localhost:3000/api/despesas/${despesa.id}`).toPromise();
+        await firstValueFrom(this.http.delete(`http://localhost:3000/api/despesas/${despesa.id}`));
         console.log('Despesa deletada:', despesa);
         this.carregarDespesas();
         alert('Despesa deletada com sucesso!');
@@ -141,10 +152,10 @@ export class HomePage implements OnInit, OnDestroy {
   async marcarComoPaga(despesa: any) {
     try {
       const novoStatus = !despesa.pago;
-      await this.http.put(`http://localhost:3000/api/despesas/${despesa.id}`, {
+      await firstValueFrom(this.http.put(`http://localhost:3000/api/despesas/${despesa.id}`, {
         ...despesa,
         pago: novoStatus
-      }).toPromise();
+      }));
 
       despesa.pago = novoStatus;
       console.log('Status de pagamento alterado:', despesa);

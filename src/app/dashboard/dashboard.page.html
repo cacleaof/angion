@@ -1,0 +1,92 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Dashboard
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Dashboard</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <h2>Bem-vindo ao Sistema</h2>
+
+    <!-- Botões de Navegação -->
+    <div class="navigation-buttons">
+      <ion-button
+        expand="block"
+        color="primary"
+        (click)="navegarParaDespesas()"
+        class="nav-button"
+        aria-label="Navegar para Despesas"
+      >
+        Despesas
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        color="secondary"
+        (click)="navegarParaProjetos()"
+        class="nav-button"
+        aria-label="Navegar para Projetos"
+      >
+        Projetos
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        color="tertiary"
+        (click)="navegarParaTarefas()"
+        class="nav-button"
+        aria-label="Navegar para Tarefas"
+      >
+        Tarefas
+      </ion-button>
+    </div>
+
+    <!-- Seção de Despesas Recentes -->
+    <div class="recent-section">
+      <h3>Despesas Recentes</h3>
+
+      <ion-button
+        expand="block"
+        (click)="carregarDespesas()"
+        [disabled]="loading"
+        size="small"
+        aria-label="Atualizar lista de despesas"
+      >
+        {{ loading ? 'Carregando...' : 'Atualizar' }}
+      </ion-button>
+
+      <div *ngIf="loading" class="loading">
+        Carregando despesas...
+      </div>
+
+      <ion-list *ngIf="!loading && despesas.length > 0">
+        <ion-item *ngFor="let despesa of despesas.slice(0, 5)">
+          <ion-label>
+            <h2>{{ despesa.nome }}</h2>
+            <p *ngIf="despesa.descricao">{{ despesa.descricao }}</p>
+            <p class="valor">Valor: R$ {{ despesa.valor }}</p>
+            <p *ngIf="despesa.imagem && despesa.imagem !== ''" class="imagem">
+              Imagem: {{ despesa.imagem }}
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <div *ngIf="!loading && despesas.length === 0" class="no-data">
+        <p>Nenhuma despesa encontrada.</p>
+      </div>
+
+      <div *ngIf="!loading && despesas.length > 5" class="more-items">
+        <p>Mostrando 5 de {{ despesas.length }} despesas</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

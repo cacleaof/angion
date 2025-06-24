@@ -1,0 +1,51 @@
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-actions h2 {
+  margin: 0;
+}
+
+ion-item {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  --background: #f8f9fa;
+}
+
+ion-item h2 {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+ion-item p {
+  margin: 4px 0;
+  color: #666;
+}
+
+.status {
+  font-weight: bold;
+  color: #3498db !important;
+  font-size: 14px;
+}
+
+ion-button[fill="clear"] {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  min-width: 40px;
+}

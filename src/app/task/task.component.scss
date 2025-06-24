@@ -1,0 +1,164 @@
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-actions h2 {
+  margin: 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.bulk-actions {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.bulk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.selected-count {
+  font-weight: 500;
+  color: #495057;
+  font-size: 14px;
+}
+
+.bulk-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+ion-item {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  --background: #f8f9fa;
+  transition: all 0.2s ease;
+}
+
+ion-item.selected {
+  --background: #e3f2fd;
+  border: 2px solid #2196f3;
+}
+
+ion-item h2 {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+ion-item p {
+  margin: 4px 0;
+  color: #666;
+}
+
+.prioridade {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.projeto {
+  font-weight: 500;
+  color: #3498db !important;
+  font-size: 14px;
+}
+
+.status {
+  font-weight: 500;
+  color: #9b59b6 !important;
+  font-size: 14px;
+}
+
+.concluida {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+ion-checkbox {
+  --size: 20px;
+  --checkbox-background-checked: #27ae60;
+}
+
+.selection-checkbox {
+  --checkbox-background-checked: #2196f3;
+}
+
+ion-button[fill="clear"] {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  min-width: 40px;
+}
+
+ion-select {
+  margin-bottom: 16px;
+}
+
+/* Estilos do formulário */
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-half {
+  flex: 1;
+  min-width: 0;
+}
+
+.required-field {
+  --highlight-color: #e74c3c;
+}
+
+.form-info {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+  border-left: 4px solid #6c757d;
+}
+
+.form-info p {
+  margin: 4px 0;
+  color: #6c757d;
+  font-size: 12px;
+}
+
+.form-actions {
+  margin-top: 24px;
+}
+
+/* Responsividade para telas pequenas */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-half {
+    flex: none;
+  }
+}

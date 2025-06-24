@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form (ngSubmit)="login()">
+    <ion-input
+      label="Email"
+      [(ngModel)]="email"
+      name="email"
+      required
+      type="email"
+      placeholder="Digite seu email"
+      [disabled]="loading"
+    ></ion-input>
+    <ion-input
+      label="Senha"
+      [(ngModel)]="password"
+      name="password"
+      required
+      type="password"
+      placeholder="Digite sua senha"
+      [disabled]="loading"
+    ></ion-input>
+    <ion-button
+      expand="block"
+      type="submit"
+      [disabled]="loading"
+    >
+      {{ loading ? 'Entrando...' : 'Entrar' }}
+    </ion-button>
+  </form>
+</ion-content>

@@ -25,6 +25,74 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
+/* Estilos de acessibilidade */
+:root {
+  /* Melhorar contraste para acessibilidade */
+  --ion-color-primary: #3880ff;
+  --ion-color-primary-rgb: 56, 128, 255;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #3171e0;
+  --ion-color-primary-tint: #4c8dff;
+}
+
+/* Foco visível para navegação por teclado */
+*:focus {
+  outline: 2px solid #3880ff !important;
+  outline-offset: 2px !important;
+}
+
+/* Melhorar contraste dos botões */
+ion-button {
+  --color: var(--ion-color-primary-contrast);
+  font-weight: 500;
+}
+
+/* Estilos para elementos com aria-hidden */
+[aria-hidden="true"] {
+  pointer-events: none !important;
+}
+
+[aria-hidden="true"] * {
+  pointer-events: none !important;
+}
+
+/* Melhorar acessibilidade dos checkboxes */
+ion-checkbox {
+  --border-radius: 4px;
+  --border-width: 2px;
+}
+
+/* Melhorar acessibilidade dos inputs */
+ion-input, ion-textarea, ion-select {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+}
+
+/* Estilos para modo de alta contraste */
+@media (prefers-contrast: high) {
+  ion-button {
+    --border-width: 2px;
+    --border-style: solid;
+  }
+
+  ion-item {
+    --border-width: 1px;
+    --border-style: solid;
+  }
+}
+
+/* Estilos para modo de redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
