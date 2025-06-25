@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://adubadica.vercel.app/api' // URL para produção
+  apiUrl: 'https://angion.vercel.app/api' // URL para produção (mesmo domínio)
 };
