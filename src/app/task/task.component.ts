@@ -1,17 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AccessibilityService } from '../services/accessibility.service';
+import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-task',
   templateUrl: 'task.component.html',
   styleUrls: ['task.component.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, CommonModule, FormsModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, CommonModule, FormsModule],
 })
 export class TaskComponent implements OnInit, OnDestroy {
   tarefas: any[] = [];
@@ -20,17 +22,21 @@ export class TaskComponent implements OnInit, OnDestroy {
   showModal: boolean = false;
   editingTarefa: any = null;
   modoEdicao: boolean = false;
-  tarefasSelecionadas: Set<number> = new Set();
+  tarefasSelecionadas: Set<string> = new Set();
+
   novaTarefa: any = {
     nome: '',
     descricao: '',
-    tipo: '',
-    uid: '',
+    tipo: 'TAREFA',
+    uid: 1,
     proj: '',
     data: '',
-    status: 'pendente',
-    prioridade: 'media'
+    status: 'PENDENTE',
+    prioridade: 2
   };
+
+  // URL da API do environment
+  private apiUrl = environment.apiUrl;
 
   prioridades = [
     { valor: 1, nome: 'Baixa' },
@@ -39,7 +45,7 @@ export class TaskComponent implements OnInit, OnDestroy {
     { valor: 4, nome: 'Urgente' }
   ];
 
-  statusOptions = ['PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDA', 'CANCELADA'];
+  statusOptions = ['PENDENTE', 'EM ANDAMENTO', 'CONCLUÍDA', 'CANCELADA'];
 
   constructor(
     private http: HttpClient,
@@ -64,7 +70,7 @@ export class TaskComponent implements OnInit, OnDestroy {
   async carregarTarefas() {
     this.loading = true;
     try {
-      const response: any = await this.http.get('https://adubadica.vercel.app/api/tasks').toPromise();
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/tasks`));
       this.tarefas = Array.isArray(response) ? response : [];
       console.log('Tarefas carregadas:', this.tarefas);
     } catch (error) {
@@ -77,27 +83,30 @@ export class TaskComponent implements OnInit, OnDestroy {
 
   async carregarProjetos() {
     try {
-      const response: any = await this.http.get('https://adubadica.vercel.app/api/projs').toPromise();
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/projs`));
       this.projetos = Array.isArray(response) ? response : [];
       console.log('Projetos carregados:', this.projetos);
     } catch (error) {
       console.error('Erro ao carregar projetos:', error);
-      // Não mostra alerta pois não é crítico para o funcionamento das tarefas
     }
   }
 
-  alternarModoEdicao() {
+  toggleModoEdicao() {
     this.modoEdicao = !this.modoEdicao;
     if (!this.modoEdicao) {
       this.tarefasSelecionadas.clear();
     }
   }
 
-  selecionarTarefa(tarefaId: number) {
-    if (this.tarefasSelecionadas.has(tarefaId)) {
-      this.tarefasSelecionadas.delete(tarefaId);
+  alternarModoEdicao() {
+    this.toggleModoEdicao();
+  }
+
+  selecionarTarefa(id: string) {
+    if (this.tarefasSelecionadas.has(id)) {
+      this.tarefasSelecionadas.delete(id);
     } else {
-      this.tarefasSelecionadas.add(tarefaId);
+      this.tarefasSelecionadas.add(id);
     }
   }
 
@@ -116,13 +125,13 @@ export class TaskComponent implements OnInit, OnDestroy {
     }
 
     if (confirm(`Tem certeza que deseja deletar ${this.tarefasSelecionadas.size} tarefa(s)?`)) {
-      try {
-        const promises = Array.from(this.tarefasSelecionadas).map(id =>
-          this.http.delete(`https://adubadica.vercel.app/api/task/${id}`).toPromise()
-        );
+      const promises = Array.from(this.tarefasSelecionadas).map(id =>
+        firstValueFrom(this.http.delete(`${this.apiUrl}/task/${id}`))
+      );
 
+      try {
         await Promise.all(promises);
-        console.log('Tarefas deletadas:', this.tarefasSelecionadas);
+        console.log('Tarefas deletadas com sucesso');
         this.tarefasSelecionadas.clear();
         this.modoEdicao = false;
         this.carregarTarefas();
@@ -144,10 +153,10 @@ export class TaskComponent implements OnInit, OnDestroy {
       const promises = Array.from(this.tarefasSelecionadas).map(id => {
         const tarefa = this.tarefas.find(t => t.id === id);
         if (tarefa) {
-          return this.http.put(`https://adubadica.vercel.app/api/task/${id}`, {
+          return firstValueFrom(this.http.put(`${this.apiUrl}/task/${id}`, {
             ...tarefa,
-            status: 'CONCLUIDA'
-          }).toPromise();
+            status: 'CONCLUÍDA'
+          }));
         }
         return Promise.resolve();
       });
@@ -161,6 +170,22 @@ export class TaskComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Erro ao marcar tarefas:', error);
       alert('Erro ao marcar tarefas');
+    }
+  }
+
+  async alterarStatus(tarefa: any) {
+    try {
+      const novoStatus = tarefa.status === 'CONCLUÍDA' ? 'PENDENTE' : 'CONCLUÍDA';
+      await firstValueFrom(this.http.put(`${this.apiUrl}/task/${tarefa.id}`, {
+        ...tarefa,
+        status: novoStatus
+      }));
+
+      tarefa.status = novoStatus;
+      console.log('Status da tarefa alterado:', tarefa);
+    } catch (error) {
+      console.error('Erro ao alterar status da tarefa:', error);
+      alert('Erro ao alterar status da tarefa');
     }
   }
 
@@ -207,11 +232,11 @@ export class TaskComponent implements OnInit, OnDestroy {
     try {
       if (this.editingTarefa) {
         // Atualizar tarefa existente
-        await this.http.put(`https://adubadica.vercel.app/api/task/${this.editingTarefa.id}`, this.novaTarefa).toPromise();
+        await firstValueFrom(this.http.put(`${this.apiUrl}/task/${this.editingTarefa.id}`, this.novaTarefa));
         console.log('Tarefa atualizada:', this.novaTarefa);
       } else {
         // Criar nova tarefa
-        await this.http.post('https://adubadica.vercel.app/api/task/', this.novaTarefa).toPromise();
+        await firstValueFrom(this.http.post(`${this.apiUrl}/task/`, this.novaTarefa));
         console.log('Tarefa criada:', this.novaTarefa);
       }
 
@@ -224,26 +249,10 @@ export class TaskComponent implements OnInit, OnDestroy {
     }
   }
 
-  async alterarStatus(tarefa: any) {
-    try {
-      const novoStatus = tarefa.status === 'CONCLUIDA' ? 'PENDENTE' : 'CONCLUIDA';
-      await this.http.put(`https://adubadica.vercel.app/api/task/${tarefa.id}`, {
-        ...tarefa,
-        status: novoStatus
-      }).toPromise();
-
-      tarefa.status = novoStatus;
-      console.log('Status da tarefa alterado:', tarefa);
-    } catch (error) {
-      console.error('Erro ao alterar status da tarefa:', error);
-      alert('Erro ao alterar status da tarefa');
-    }
-  }
-
   async deletarTarefa(tarefa: any) {
     if (confirm(`Tem certeza que deseja deletar a tarefa "${tarefa.nome}"?`)) {
       try {
-        await this.http.delete(`https://adubadica.vercel.app/api/task/${tarefa.id}`).toPromise();
+        await firstValueFrom(this.http.delete(`${this.apiUrl}/task/${tarefa.id}`));
         console.log('Tarefa deletada:', tarefa);
         this.carregarTarefas();
         alert('Tarefa deletada com sucesso!');
@@ -252,6 +261,27 @@ export class TaskComponent implements OnInit, OnDestroy {
         alert('Erro ao deletar tarefa');
       }
     }
+  }
+
+  async alterarStatusTarefa(tarefa: any) {
+    try {
+      const novoStatus = tarefa.status === 'CONCLUÍDA' ? 'PENDENTE' : 'CONCLUÍDA';
+      await firstValueFrom(this.http.put(`${this.apiUrl}/task/${tarefa.id}`, {
+        ...tarefa,
+        status: novoStatus
+      }));
+
+      tarefa.status = novoStatus;
+      console.log('Status da tarefa alterado:', tarefa);
+      alert(tarefa.status === 'CONCLUÍDA' ? 'Tarefa marcada como concluída!' : 'Tarefa marcada como pendente!');
+    } catch (error) {
+      console.error('Erro ao alterar status da tarefa:', error);
+      alert('Erro ao alterar status da tarefa');
+    }
+  }
+
+  isConcluida(tarefa: any): boolean {
+    return tarefa.status === 'CONCLUÍDA';
   }
 
   getPrioridadeColor(prioridade: number): string {
@@ -273,9 +303,5 @@ export class TaskComponent implements OnInit, OnDestroy {
     if (!projId) return '';
     const projeto = this.projetos.find(p => p.id == projId);
     return projeto ? projeto.nome : projId;
-  }
-
-  isConcluida(tarefa: any): boolean {
-    return tarefa.status === 'CONCLUIDA';
   }
 }

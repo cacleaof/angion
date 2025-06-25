@@ -3,6 +3,8 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton } from
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +18,9 @@ export class LoginPage {
   password: string = '';
   loading: boolean = false;
 
+  // URL da API do environment
+  private apiUrl = environment.apiUrl;
+
   constructor(private http: HttpClient, private router: Router) {}
 
   async login() {
@@ -28,7 +33,7 @@ export class LoginPage {
 
     try {
       // Primeiro, buscar todos os usuários para verificar se existe
-      const response: any = await this.http.get('http://localhost:3000/api/users').toPromise();
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/users`));
       const users: any[] = Array.isArray(response) ? response : [];
 
       // Procurar o usuário pelo email

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 
 @Component({
@@ -27,9 +28,10 @@ export class DespesaComponent implements OnInit {
     pago: false
   };
 
-  constructor(private http: HttpClient,
-    private router: Router
-  ) { }
+  // URL da API do environment
+  private apiUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit() {
     this.carregarDespesas();
@@ -42,7 +44,7 @@ export class DespesaComponent implements OnInit {
   async carregarDespesas() {
     this.loading = true;
     try {
-      const response: any = await firstValueFrom(this.http.get('https://adubadica.vercel.app/api/despesas'));
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/despesas`));
       this.despesas = Array.isArray(response) ? response : [];
       // Ordenar pelo vencimento (do mais próximo para o mais distante)
       this.despesas.sort((a, b) => {
@@ -118,11 +120,11 @@ export class DespesaComponent implements OnInit {
 
       if (this.editingDespesa) {
         // Atualizar despesa existente
-        await firstValueFrom(this.http.put(`https://adubadica.vercel.app/api/despesa/${this.editingDespesa.id}`, dadosParaSalvar));
+        await firstValueFrom(this.http.put(`${this.apiUrl}/despesas/${this.editingDespesa.id}`, dadosParaSalvar));
         console.log('Despesa atualizada:', dadosParaSalvar);
       } else {
         // Criar nova despesa
-        await firstValueFrom(this.http.post('https://adubadica.vercel.app/api/despesa/', dadosParaSalvar));
+        await firstValueFrom(this.http.post(`${this.apiUrl}/despesas`, dadosParaSalvar));
         console.log('Despesa criada:', dadosParaSalvar);
       }
 
@@ -138,7 +140,7 @@ export class DespesaComponent implements OnInit {
   async deletarDespesa(despesa: any) {
     if (confirm(`Tem certeza que deseja deletar a despesa "${despesa.nome}"?`)) {
       try {
-        await firstValueFrom(this.http.delete(`https://adubadica.vercel.app/api/despesa/${despesa.id}`));
+        await firstValueFrom(this.http.delete(`${this.apiUrl}/despesas/${despesa.id}`));
         console.log('Despesa deletada:', despesa);
         this.carregarDespesas();
         alert('Despesa deletada com sucesso!');
@@ -152,7 +154,7 @@ export class DespesaComponent implements OnInit {
   async marcarComoPaga(despesa: any) {
     try {
       const novoStatus = !despesa.pago;
-      await firstValueFrom(this.http.put(`https://adubadica.vercel.app/api/despesa/${despesa.id}`, {
+      await firstValueFrom(this.http.put(`${this.apiUrl}/despesas/${despesa.id}`, {
         ...despesa,
         pago: novoStatus
       }));

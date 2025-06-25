@@ -1,17 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonInput, IonTextarea } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonModal, IonInput, IonTextarea } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AccessibilityService } from '../services/accessibility.service';
+import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-proj',
   templateUrl: 'proj.component.html',
   styleUrls: ['proj.component.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonInput, IonTextarea, CommonModule, FormsModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonModal, IonInput, IonTextarea, CommonModule, FormsModule],
 })
 export class ProjComponent implements OnInit, OnDestroy {
   projetos: any[] = [];
@@ -21,10 +23,13 @@ export class ProjComponent implements OnInit, OnDestroy {
   novoProjeto: any = {
     nome: '',
     descricao: '',
-    status: '',
+    status: 'Em andamento',
     data_inicio: '',
     data_fim: ''
   };
+
+  // URL da API do environment
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,
@@ -41,14 +46,10 @@ export class ProjComponent implements OnInit, OnDestroy {
     this.accessibilityService.clearFocusOnDestroy();
   }
 
-  navegarParaHome() {
-    this.router.navigate(['/dashboard']);
-  }
-
   async carregarProjetos() {
     this.loading = true;
     try {
-      const response: any = await this.http.get('https://adubadica.vercel.app/api/projs').toPromise();
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/projs`));
       this.projetos = Array.isArray(response) ? response : [];
       console.log('Projetos carregados:', this.projetos);
     } catch (error) {
@@ -57,6 +58,10 @@ export class ProjComponent implements OnInit, OnDestroy {
     } finally {
       this.loading = false;
     }
+  }
+
+  navegarParaHome() {
+    this.router.navigate(['/dashboard']);
   }
 
   abrirModal(projeto?: any) {
@@ -90,11 +95,11 @@ export class ProjComponent implements OnInit, OnDestroy {
     try {
       if (this.editingProjeto) {
         // Atualizar projeto existente
-        await this.http.put(`https://adubadica.vercel.app/api/proj/${this.editingProjeto.id}`, this.novoProjeto).toPromise();
+        await firstValueFrom(this.http.put(`${this.apiUrl}/proj/${this.editingProjeto.id}`, this.novoProjeto));
         console.log('Projeto atualizado:', this.novoProjeto);
       } else {
         // Criar novo projeto
-        await this.http.post('https://adubadica.vercel.app/api/proj/', this.novoProjeto).toPromise();
+        await firstValueFrom(this.http.post(`${this.apiUrl}/proj/`, this.novoProjeto));
         console.log('Projeto criado:', this.novoProjeto);
       }
 
@@ -110,7 +115,7 @@ export class ProjComponent implements OnInit, OnDestroy {
   async deletarProjeto(projeto: any) {
     if (confirm(`Tem certeza que deseja deletar o projeto "${projeto.nome}"?`)) {
       try {
-        await this.http.delete(`https://adubadica.vercel.app/api/proj/${projeto.id}`).toPromise();
+        await firstValueFrom(this.http.delete(`${this.apiUrl}/proj/${projeto.id}`));
         console.log('Projeto deletado:', projeto);
         this.carregarProjetos();
         alert('Projeto deletado com sucesso!');

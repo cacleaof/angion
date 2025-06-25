@@ -1,20 +1,25 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonIcon } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AccessibilityService } from '../services/accessibility.service';
+import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: 'dashboard.page.html',
   styleUrls: ['dashboard.page.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonIcon, CommonModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, CommonModule],
 })
 export class DashboardPage implements OnInit, OnDestroy {
   despesas: any[] = [];
   loading: boolean = false;
+
+  // URL da API do environment
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,
@@ -34,7 +39,7 @@ export class DashboardPage implements OnInit, OnDestroy {
   async carregarDespesas() {
     this.loading = true;
     try {
-      const response: any = await this.http.get('https://adubadica.vercel.app/api/despesas').toPromise();
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/despesas`));
       this.despesas = Array.isArray(response) ? response : [];
       console.log('Despesas carregadas:', this.despesas);
     } catch (error) {

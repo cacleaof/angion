@@ -1,16 +1,18 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonInput, IonTextarea } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AccessibilityService } from '../services/accessibility.service';
+import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonInput, IonTextarea, CommonModule, FormsModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, CommonModule, FormsModule],
 })
 export class HomePage implements OnInit, OnDestroy {
   despesas: any[] = [];
@@ -24,6 +26,9 @@ export class HomePage implements OnInit, OnDestroy {
     imagem: '',
     pago: false
   };
+
+  // URL da API do environment
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,
@@ -43,7 +48,7 @@ export class HomePage implements OnInit, OnDestroy {
   async carregarDespesas() {
     this.loading = true;
     try {
-      const response: any = await this.http.get('https://adubadica.vercel.app/api/despesas').toPromise();
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/despesas`));
       this.despesas = Array.isArray(response) ? response : [];
       console.log('Despesas carregadas:', this.despesas);
     } catch (error) {
@@ -106,6 +111,12 @@ export class HomePage implements OnInit, OnDestroy {
 
     try {
       if (this.editingDespesa) {
+        // Atualizar despesa existente
+        await firstValueFrom(this.http.put(`${this.apiUrl}/despesas/${this.editingDespesa.id}`, this.novaDespesa));
+        console.log('Despesa atualizada:', this.novaDespesa);
+      } else {
+        // Criar nova despesa
+        await firstValueFrom(this.http.post(`${this.apiUrl}/despesas`, this.novaDespesa));
         console.log('Despesa criada:', this.novaDespesa);
       }
 
@@ -121,6 +132,7 @@ export class HomePage implements OnInit, OnDestroy {
   async deletarDespesa(despesa: any) {
     if (confirm(`Tem certeza que deseja deletar a despesa "${despesa.nome}"?`)) {
       try {
+        await firstValueFrom(this.http.delete(`${this.apiUrl}/despesas/${despesa.id}`));
         console.log('Despesa deletada:', despesa);
         this.carregarDespesas();
         alert('Despesa deletada com sucesso!');
@@ -134,10 +146,10 @@ export class HomePage implements OnInit, OnDestroy {
   async marcarComoPaga(despesa: any) {
     try {
       const novoStatus = !despesa.pago;
-      await this.http.put(`https://adubadica.vercel.app/api/despesa/${despesa.id}`, {
+      await firstValueFrom(this.http.put(`${this.apiUrl}/despesas/${despesa.id}`, {
         ...despesa,
         pago: novoStatus
-      }).toPromise();
+      }));
 
       despesa.pago = novoStatus;
       console.log('Status de pagamento alterado:', despesa);
