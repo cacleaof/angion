@@ -120,11 +120,11 @@ export class DespesaComponent implements OnInit {
 
       if (this.editingDespesa) {
         // Atualizar despesa existente
-        await firstValueFrom(this.http.put(`${this.apiUrl}/despesas/${this.editingDespesa.id}`, dadosParaSalvar));
+        await firstValueFrom(this.http.put(`${this.apiUrl}/despesa/${this.editingDespesa.id}`, dadosParaSalvar));
         console.log('Despesa atualizada:', dadosParaSalvar);
       } else {
         // Criar nova despesa
-        await firstValueFrom(this.http.post(`${this.apiUrl}/despesas`, dadosParaSalvar));
+        await firstValueFrom(this.http.post(`${this.apiUrl}/despesa`, dadosParaSalvar));
         console.log('Despesa criada:', dadosParaSalvar);
       }
 
@@ -140,7 +140,7 @@ export class DespesaComponent implements OnInit {
   async deletarDespesa(despesa: any) {
     if (confirm(`Tem certeza que deseja deletar a despesa "${despesa.nome}"?`)) {
       try {
-        await firstValueFrom(this.http.delete(`${this.apiUrl}/despesas/${despesa.id}`));
+        await firstValueFrom(this.http.delete(`${this.apiUrl}/despesa/${despesa.id}`));
         console.log('Despesa deletada:', despesa);
         this.carregarDespesas();
         alert('Despesa deletada com sucesso!');
@@ -154,7 +154,7 @@ export class DespesaComponent implements OnInit {
   async marcarComoPaga(despesa: any) {
     try {
       const novoStatus = !despesa.pago;
-      await firstValueFrom(this.http.put(`${this.apiUrl}/despesas/${despesa.id}`, {
+      await firstValueFrom(this.http.put(`${this.apiUrl}/despesa/${despesa.id}`, {
         ...despesa,
         pago: novoStatus
       }));
