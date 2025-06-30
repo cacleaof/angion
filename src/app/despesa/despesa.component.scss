@@ -174,3 +174,42 @@
   font-size: 18px;
   font-weight: 600;
 }
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.button-group ion-button {
+  margin: 0;
+}
+
+.filtros-ativos {
+  background: var(--ion-color-light);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+
+  p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: var(--ion-color-dark);
+    font-weight: 500;
+  }
+
+  .filtros-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag-filtro {
+    background: var(--ion-color-primary);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+}

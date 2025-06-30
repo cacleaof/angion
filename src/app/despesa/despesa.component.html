@@ -15,9 +15,42 @@
   <div class="recent-section">
     <div class="header-actions">
       <h2>Lista de Despesas</h2>
-      <ion-button (click)="abrirModal()" color="primary" aria-label="Adicionar nova despesa">
-        Nova Despesa
-      </ion-button>
+      <div class="button-group">
+        <ion-button
+          (click)="filtrarDespesasMesAtual()"
+          [color]="mostrarApenasMesAtual ? 'tertiary' : 'medium'"
+          aria-label="Mostrar despesas do mês atual">
+          {{ nomeMesAtual }}
+        </ion-button>
+        <ion-button
+          (click)="filtrarDespesasProximoMes()"
+          [color]="mostrarApenasProximoMes ? 'tertiary' : 'medium'"
+          aria-label="Mostrar despesas do próximo mês">
+          {{ nomeProximoMes }}
+        </ion-button>
+        <ion-button
+          (click)="filtrarDespesasNaoPagas()"
+          [color]="mostrarApenasNaoPagas ? 'warning' : 'medium'"
+          aria-label="Mostrar apenas despesas não pagas">
+          {{ mostrarApenasNaoPagas ? 'Não Pagas' : 'Todas' }}
+        </ion-button>
+        <ion-button
+          (click)="abrirModal()"
+          color="primary"
+          aria-label="Adicionar nova despesa">
+          Nova Despesa
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Indicador de filtros ativos -->
+    <div *ngIf="mostrarApenasMesAtual || mostrarApenasProximoMes || mostrarApenasNaoPagas" class="filtros-ativos">
+      <p>Filtros ativos:</p>
+      <div class="filtros-tags">
+        <span *ngIf="mostrarApenasMesAtual" class="tag-filtro">{{ nomeMesAtual }}</span>
+        <span *ngIf="mostrarApenasProximoMes" class="tag-filtro">{{ nomeProximoMes }}</span>
+        <span *ngIf="mostrarApenasNaoPagas" class="tag-filtro">Não Pagas</span>
+      </div>
     </div>
 
     <ion-button
@@ -34,8 +67,8 @@
       Carregando despesas...
     </div>
 
-    <ion-list *ngIf="!loading && despesas.length > 0">
-      <ion-item *ngFor="let despesa of despesas" [class.paga]="despesa.pago" (click)="abrirModal(despesa)">
+    <ion-list *ngIf="!loading && despesasFiltradas.length > 0">
+      <ion-item *ngFor="let despesa of despesasFiltradas" [class.paga]="despesa.pago" (click)="abrirModal(despesa)">
         <ion-label>
           <h2>{{ despesa.nome }}</h2>
           <p *ngIf="despesa.descricao">{{ despesa.descricao }}</p>
@@ -62,8 +95,31 @@
       </ion-item>
     </ion-list>
 
-    <div *ngIf="!loading && despesas.length === 0" class="no-data">
-      <p>Nenhuma despesa encontrada.</p>
+    <div *ngIf="!loading && despesasFiltradas.length === 0" class="no-data">
+      <p *ngIf="mostrarApenasMesAtual && !mostrarApenasProximoMes && !mostrarApenasNaoPagas">
+        Nenhuma despesa encontrada para {{ nomeMesAtual }}.
+      </p>
+      <p *ngIf="mostrarApenasProximoMes && !mostrarApenasMesAtual && !mostrarApenasNaoPagas">
+        Nenhuma despesa encontrada para {{ nomeProximoMes }}.
+      </p>
+      <p *ngIf="mostrarApenasNaoPagas && !mostrarApenasMesAtual && !mostrarApenasProximoMes">
+        Nenhuma despesa não paga encontrada.
+      </p>
+      <p *ngIf="mostrarApenasMesAtual && mostrarApenasNaoPagas && !mostrarApenasProximoMes">
+        Nenhuma despesa não paga encontrada para {{ nomeMesAtual }}.
+      </p>
+      <p *ngIf="mostrarApenasProximoMes && mostrarApenasNaoPagas && !mostrarApenasMesAtual">
+        Nenhuma despesa não paga encontrada para {{ nomeProximoMes }}.
+      </p>
+      <p *ngIf="mostrarApenasMesAtual && mostrarApenasProximoMes && !mostrarApenasNaoPagas">
+        Nenhuma despesa encontrada para {{ nomeMesAtual }} e {{ nomeProximoMes }}.
+      </p>
+      <p *ngIf="mostrarApenasMesAtual && mostrarApenasProximoMes && mostrarApenasNaoPagas">
+        Nenhuma despesa não paga encontrada para {{ nomeMesAtual }} e {{ nomeProximoMes }}.
+      </p>
+      <p *ngIf="!mostrarApenasNaoPagas && !mostrarApenasMesAtual && !mostrarApenasProximoMes">
+        Nenhuma despesa encontrada.
+      </p>
     </div>
   </div>
 </ion-content>

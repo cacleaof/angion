@@ -17,9 +17,15 @@ import { Router } from '@angular/router';
 })
 export class DespesaComponent implements OnInit, AfterViewInit {
   despesas: any[] = [];
+  despesasFiltradas: any[] = [];
   loading: boolean = false;
   showModal: boolean = false;
   editingDespesa: any = null;
+  mostrarApenasNaoPagas: boolean = false;
+  mostrarApenasMesAtual: boolean = false;
+  mostrarApenasProximoMes: boolean = false;
+  nomeMesAtual: string = '';
+  nomeProximoMes: string = '';
   novaDespesa: any = {
     nome: '',
     descricao: '',
@@ -43,6 +49,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.carregarDespesas();
+    this.definirNomesMeses();
     // this.accessibilityService.setupComponentAccessibility();
   }
 
@@ -71,6 +78,21 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/dashboard']);
   }
 
+  definirNomesMeses() {
+    const meses = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    const dataAtual = new Date();
+
+    // Mês atual
+    this.nomeMesAtual = meses[dataAtual.getMonth()];
+
+    // Próximo mês
+    const proximoMes = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 1);
+    this.nomeProximoMes = meses[proximoMes.getMonth()];
+  }
+
   async carregarDespesas() {
     this.loading = true;
     try {
@@ -82,6 +104,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         if (!b.venc) return -1;
         return new Date(a.venc).getTime() - new Date(b.venc).getTime();
       });
+      this.aplicarFiltro();
       console.log('Despesas carregadas:', this.despesas);
     } catch (error) {
       console.error('Erro ao carregar despesas:', error);
@@ -89,6 +112,63 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  filtrarDespesasNaoPagas() {
+    this.mostrarApenasNaoPagas = !this.mostrarApenasNaoPagas;
+    this.aplicarFiltro();
+  }
+
+  filtrarDespesasMesAtual() {
+    this.mostrarApenasMesAtual = !this.mostrarApenasMesAtual;
+    this.aplicarFiltro();
+  }
+
+  filtrarDespesasProximoMes() {
+    this.mostrarApenasProximoMes = !this.mostrarApenasProximoMes;
+    this.aplicarFiltro();
+  }
+
+  aplicarFiltro() {
+    let despesasFiltradas = this.despesas;
+
+    // Aplicar filtro de mês atual
+    if (this.mostrarApenasMesAtual) {
+      const dataAtual = new Date();
+      const mesAtual = dataAtual.getMonth();
+      const anoAtual = dataAtual.getFullYear();
+
+      despesasFiltradas = despesasFiltradas.filter(despesa => {
+        if (!despesa.venc) return false;
+
+        const dataVencimento = new Date(despesa.venc);
+        return dataVencimento.getMonth() === mesAtual &&
+               dataVencimento.getFullYear() === anoAtual;
+      });
+    }
+
+    // Aplicar filtro de próximo mês
+    if (this.mostrarApenasProximoMes) {
+      const dataAtual = new Date();
+      const proximoMes = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 1);
+      const mesProximo = proximoMes.getMonth();
+      const anoProximo = proximoMes.getFullYear();
+
+      despesasFiltradas = despesasFiltradas.filter(despesa => {
+        if (!despesa.venc) return false;
+
+        const dataVencimento = new Date(despesa.venc);
+        return dataVencimento.getMonth() === mesProximo &&
+               dataVencimento.getFullYear() === anoProximo;
+      });
+    }
+
+    // Aplicar filtro de não pagas
+    if (this.mostrarApenasNaoPagas) {
+      despesasFiltradas = despesasFiltradas.filter(despesa => !despesa.pago);
+    }
+
+    this.despesasFiltradas = despesasFiltradas;
   }
 
   abrirModal(despesa?: any) {
