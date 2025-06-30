@@ -18,6 +18,10 @@ export const routes: Routes = [
     loadComponent: () => import('./proj/proj.component').then((m) => m.ProjComponent),
   },
   {
+    path: 'nproj',
+    loadComponent: () => import('./nproj/nproj.component').then((m) => m.NprojComponent),
+  },
+  {
     path: 'task',
     loadComponent: () => import('./task/task.component').then((m) => m.TaskComponent),
   },

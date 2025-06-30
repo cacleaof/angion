@@ -1,0 +1,40 @@
+<div>
+  <h3>Adicionar Novo Projeto</h3>
+
+  <!-- Versão de teste com inputs nativos -->
+  <div style="border: 2px solid red; padding: 10px; margin: 10px 0;">
+    <h4>TESTE - Input Nativo</h4>
+    <input
+      type="text"
+      id="testeInput"
+      placeholder="Digite aqui para testar backspace"
+      style="width: 100%; padding: 8px; margin: 5px 0;">
+    <p>Valor do teste: "{{valorTeste}}"</p>
+  </div>
+
+  <form (ngSubmit)="onSubmit()">
+    <div>
+      <label for="nomeProjeto">Nome do Projeto:</label>
+      <input
+        type="text"
+        id="nomeProjeto"
+        [(ngModel)]="novoProjetoNome"
+        name="nomeProjeto"
+        autocomplete="off"
+        spellcheck="false"
+        required>
+      <p>Nome atual: "{{novoProjetoNome}}"</p>
+
+      <label for="descProjeto">Descrição do Projeto:</label>
+      <input
+        type="text"
+        id="descProjeto"
+        [(ngModel)]="novoProjetoDesc"
+        name="descProjeto"
+        autocomplete="off"
+        spellcheck="false">
+      <p>Descrição atual: "{{novoProjetoDesc}}"</p>
+    </div>
+    <button type="submit">Adicionar Projeto</button>
+  </form>
+</div>

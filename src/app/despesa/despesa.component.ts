@@ -1,20 +1,21 @@
-import { Component, OnInit } from '@angular/core';
-import { IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonTextarea, IonHeader, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonHeader, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
+// import { AccessibilityService } from '../services/accessibility.service';
 
 @Component({
   selector: 'app-despesa',
   templateUrl: './despesa.component.html',
   styleUrls: ['./despesa.component.scss'],
   standalone: true,
-  imports: [IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonTextarea, IonHeader, IonToolbar, IonTitle, IonButtons, CommonModule, FormsModule],
+  imports: [IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonHeader, IonToolbar, IonTitle, IonButtons, CommonModule, FormsModule],
 })
-export class DespesaComponent implements OnInit {
+export class DespesaComponent implements OnInit, AfterViewInit {
   despesas: any[] = [];
   loading: boolean = false;
   showModal: boolean = false;
@@ -31,10 +32,39 @@ export class DespesaComponent implements OnInit {
   // URL da API do environment
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  // Adicione esta propriedade
+  showCustomTextarea = false;
+
+  constructor(
+    private http: HttpClient,
+    private router: Router
+    // private accessibilityService: AccessibilityService
+  ) { }
 
   ngOnInit() {
     this.carregarDespesas();
+    // this.accessibilityService.setupComponentAccessibility();
+  }
+
+  ngAfterViewInit() {
+    // Aguardar o modal ser renderizado
+    setTimeout(() => {
+      const textarea = document.querySelector('ion-textarea textarea') as HTMLTextAreaElement;
+      if (textarea) {
+        console.log('Textarea encontrado:', textarea);
+
+        // Adicionar listener para verificar se está funcionando
+        textarea.addEventListener('input', (event) => {
+          console.log('Input event:', event);
+          console.log('Valor atual:', (event.target as HTMLTextAreaElement).value);
+        });
+
+        // Testar se consegue digitar
+        textarea.focus();
+        textarea.value = 'Teste com espaços 123';
+        console.log('Valor após teste:', textarea.value);
+      }
+    }, 500);
   }
 
   navegarParaHome() {
@@ -100,6 +130,24 @@ export class DespesaComponent implements OnInit {
     this.editingDespesa = null;
   }
 
+  // Função auxiliar para formatar data
+  private formatarData(data: any): string | null {
+    if (!data) return null;
+
+    // Se já está no formato YYYY-MM-DD
+    if (typeof data === 'string' && data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return data;
+    }
+
+    // Converter para formato YYYY-MM-DD
+    const dataObj = new Date(data);
+    if (!isNaN(dataObj.getTime())) {
+      return dataObj.toISOString().split('T')[0];
+    }
+
+    return null;
+  }
+
   async salvarDespesa() {
     if (!this.novaDespesa.nome || !this.novaDespesa.valor) {
       alert('Nome e valor da despesa são obrigatórios');
@@ -107,23 +155,13 @@ export class DespesaComponent implements OnInit {
     }
 
     try {
-      // Preparar dados para salvar
       const dadosParaSalvar = { ...this.novaDespesa };
-
-      // Formatar a data de vencimento se existir
-      if (dadosParaSalvar.venc) {
-        const data = new Date(dadosParaSalvar.venc);
-        if (!isNaN(data.getTime())) {
-          dadosParaSalvar.venc = data.toISOString().split('T')[0];
-        }
-      }
+      dadosParaSalvar.venc = this.formatarData(dadosParaSalvar.venc);
 
       if (this.editingDespesa) {
-        // Atualizar despesa existente
         await firstValueFrom(this.http.put(`${this.apiUrl}/despesa/${this.editingDespesa.id}`, dadosParaSalvar));
         console.log('Despesa atualizada:', dadosParaSalvar);
       } else {
-        // Criar nova despesa
         await firstValueFrom(this.http.post(`${this.apiUrl}/despesa`, dadosParaSalvar));
         console.log('Despesa criada:', dadosParaSalvar);
       }
@@ -154,10 +192,10 @@ export class DespesaComponent implements OnInit {
   async marcarComoPaga(despesa: any) {
     try {
       const novoStatus = !despesa.pago;
-      await firstValueFrom(this.http.put(`${this.apiUrl}/despesa/${despesa.id}`, {
-        ...despesa,
-        pago: novoStatus
-      }));
+      const dadosParaEnviar = { ...despesa, pago: novoStatus };
+      dadosParaEnviar.venc = this.formatarData(dadosParaEnviar.venc);
+
+      await firstValueFrom(this.http.put(`${this.apiUrl}/despesa/${despesa.id}`, dadosParaEnviar));
 
       despesa.pago = novoStatus;
       console.log('Status de pagamento alterado:', despesa);
@@ -166,5 +204,26 @@ export class DespesaComponent implements OnInit {
       console.error('Erro ao alterar status de pagamento:', error);
       alert('Erro ao alterar status de pagamento');
     }
+  }
+
+  onDescricaoInput(event: any) {
+    console.log('Valor da descrição:', event.target.value);
+    console.log('Tipo do valor:', typeof event.target.value);
+  }
+
+  // Adicione este método
+  toggleCustomTextarea() {
+    this.showCustomTextarea = !this.showCustomTextarea;
+  }
+
+  onTextareaInput(event: any) {
+    console.log('Textarea input:', event.target.value);
+    this.novaDespesa.descricao = event.target.value;
+  }
+
+  onTextareaKeydown(event: any) {
+    console.log('Keydown event:', event.key);
+    // Permitir todas as teclas, incluindo espaço
+    return true;
   }
 }

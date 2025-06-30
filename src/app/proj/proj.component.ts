@@ -4,7 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AccessibilityService } from '../services/accessibility.service';
+// import { AccessibilityService } from '../services/accessibility.service';
+import { ProjService } from '../services/proj.service';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
 
@@ -23,9 +24,12 @@ export class ProjComponent implements OnInit, OnDestroy {
   novoProjeto: any = {
     nome: '',
     descricao: '',
-    status: 'Em andamento',
-    data_inicio: '',
-    data_fim: ''
+    tipo: 'PROJETO',
+    uid: 1,
+    data: '',
+    fim: '',
+    status: 'ATIVO',
+    prioridade: 2
   };
 
   // URL da API do environment
@@ -34,16 +38,17 @@ export class ProjComponent implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private accessibilityService: AccessibilityService
+    // private accessibilityService: AccessibilityService,
+    private projService: ProjService
   ) {}
 
   ngOnInit() {
     this.carregarProjetos();
-    this.accessibilityService.setupComponentAccessibility();
+    // this.accessibilityService.setupComponentAccessibility();
   }
 
   ngOnDestroy() {
-    this.accessibilityService.clearFocusOnDestroy();
+    // this.accessibilityService.clearFocusOnDestroy();
   }
 
   async carregarProjetos() {
@@ -67,15 +72,45 @@ export class ProjComponent implements OnInit, OnDestroy {
   abrirModal(projeto?: any) {
     if (projeto) {
       this.editingProjeto = projeto;
-      this.novoProjeto = { ...projeto };
+      // Converter datas para formato YYYY-MM-DD para inputs
+      let dataInicio = '';
+      let dataFim = '';
+
+      if (projeto.data) {
+        const data = new Date(projeto.data);
+        if (!isNaN(data.getTime())) {
+          dataInicio = data.toISOString().split('T')[0];
+        }
+      }
+
+      if (projeto.fim) {
+        const data = new Date(projeto.fim);
+        if (!isNaN(data.getTime())) {
+          dataFim = data.toISOString().split('T')[0];
+        }
+      }
+
+      this.novoProjeto = {
+        nome: projeto.nome || '',
+        descricao: projeto.descricao || '',
+        tipo: projeto.tipo || 'PROJETO',
+        uid: projeto.uid || 1,
+        data: dataInicio,
+        fim: dataFim,
+        status: projeto.status || 'ATIVO',
+        prioridade: projeto.prioridade || 2
+      };
     } else {
       this.editingProjeto = null;
       this.novoProjeto = {
         nome: '',
         descricao: '',
-        status: 'Em andamento',
-        data_inicio: '',
-        data_fim: ''
+        tipo: 'PROJETO',
+        uid: 1,
+        data: '',
+        fim: '',
+        status: 'ATIVO',
+        prioridade: 2
       };
     }
     this.showModal = true;
@@ -86,6 +121,24 @@ export class ProjComponent implements OnInit, OnDestroy {
     this.editingProjeto = null;
   }
 
+  // Função auxiliar para formatar data
+  private formatarData(data: any): string | null {
+    if (!data) return null;
+
+    // Se já está no formato YYYY-MM-DD
+    if (typeof data === 'string' && data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return data;
+    }
+
+    // Converter para formato YYYY-MM-DD
+    const dataObj = new Date(data);
+    if (!isNaN(dataObj.getTime())) {
+      return dataObj.toISOString().split('T')[0];
+    }
+
+    return null;
+  }
+
   async salvarProjeto() {
     if (!this.novoProjeto.nome) {
       alert('Nome do projeto é obrigatório');
@@ -93,14 +146,28 @@ export class ProjComponent implements OnInit, OnDestroy {
     }
 
     try {
+      // Preparar dados para enviar
+      const dadosParaEnviar = {
+        nome: this.novoProjeto.nome,
+        descricao: this.novoProjeto.descricao || '',
+        tipo: this.novoProjeto.tipo || 'PROJETO',
+        uid: this.novoProjeto.uid || 1,
+        data: this.formatarData(this.novoProjeto.data),
+        fim: this.formatarData(this.novoProjeto.fim),
+        status: this.novoProjeto.status || 'ATIVO',
+        prioridade: this.novoProjeto.prioridade || 2
+      };
+
       if (this.editingProjeto) {
         // Atualizar projeto existente
-        await firstValueFrom(this.http.put(`${this.apiUrl}/proj/${this.editingProjeto.id}`, this.novoProjeto));
-        console.log('Projeto atualizado:', this.novoProjeto);
+        console.log('Dados sendo enviados para atualização:', dadosParaEnviar);
+        await firstValueFrom(this.http.put(`${this.apiUrl}/proj/${this.editingProjeto.id}`, dadosParaEnviar));
+        console.log('Projeto atualizado:', dadosParaEnviar);
       } else {
         // Criar novo projeto
-        await firstValueFrom(this.http.post(`${this.apiUrl}/proj/`, this.novoProjeto));
-        console.log('Projeto criado:', this.novoProjeto);
+        console.log('Dados sendo enviados para criação:', dadosParaEnviar);
+        await firstValueFrom(this.http.post(`${this.apiUrl}/proj/`, dadosParaEnviar));
+        console.log('Projeto criado:', dadosParaEnviar);
       }
 
       this.fecharModal();
