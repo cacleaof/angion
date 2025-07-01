@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home">
+      <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home" class="mobile-button">
         Home
       </ion-button>
     </ion-buttons>
@@ -19,25 +19,29 @@
         <ion-button
           (click)="filtrarDespesasMesAtual()"
           [color]="mostrarApenasMesAtual ? 'tertiary' : 'medium'"
-          aria-label="Mostrar despesas do mês atual">
+          aria-label="Mostrar despesas do mês atual"
+          class="filter-button mobile-button">
           {{ nomeMesAtual }}
         </ion-button>
         <ion-button
           (click)="filtrarDespesasProximoMes()"
           [color]="mostrarApenasProximoMes ? 'tertiary' : 'medium'"
-          aria-label="Mostrar despesas do próximo mês">
+          aria-label="Mostrar despesas do próximo mês"
+          class="filter-button mobile-button">
           {{ nomeProximoMes }}
         </ion-button>
         <ion-button
           (click)="filtrarDespesasNaoPagas()"
           [color]="mostrarApenasNaoPagas ? 'warning' : 'medium'"
-          aria-label="Mostrar apenas despesas não pagas">
+          aria-label="Mostrar apenas despesas não pagas"
+          class="filter-button mobile-button">
           {{ mostrarApenasNaoPagas ? 'Não Pagas' : 'Todas' }}
         </ion-button>
         <ion-button
           (click)="abrirModal()"
           color="primary"
-          aria-label="Adicionar nova despesa">
+          aria-label="Adicionar nova despesa"
+          class="add-button mobile-button">
           Nova Despesa
         </ion-button>
       </div>
@@ -59,6 +63,7 @@
       [disabled]="loading"
       size="small"
       aria-label="Atualizar lista de despesas"
+      class="mobile-button"
     >
       {{ loading ? 'Carregando...' : 'Atualizar' }}
     </ion-button>
@@ -82,13 +87,13 @@
 
         <!-- Botões de ação -->
         <div slot="end" class="action-buttons" (click)="$event.stopPropagation()">
-          <ion-button fill="clear" (click)="abrirModal(despesa)" color="primary" [attr.aria-label]="'Editar despesa ' + despesa.nome">
+          <ion-button fill="clear" (click)="abrirModal(despesa)" color="primary" [attr.aria-label]="'Editar despesa ' + despesa.nome" class="action-button mobile-button">
             Editar
           </ion-button>
-          <ion-button fill="clear" (click)="deletarDespesa(despesa)" color="danger" [attr.aria-label]="'Deletar despesa ' + despesa.nome">
+          <ion-button fill="clear" (click)="deletarDespesa(despesa)" color="danger" [attr.aria-label]="'Deletar despesa ' + despesa.nome" class="action-button mobile-button">
             Deletar
           </ion-button>
-          <ion-button fill="clear" (click)="marcarComoPaga(despesa)" [color]="despesa.pago ? 'success' : 'warning'" [attr.aria-label]="'Marcar despesa ' + despesa.nome + ' como ' + (despesa.pago ? 'não paga' : 'paga')">
+          <ion-button fill="clear" (click)="marcarComoPaga(despesa)" [color]="despesa.pago ? 'success' : 'warning'" [attr.aria-label]="'Marcar despesa ' + despesa.nome + ' como ' + (despesa.pago ? 'não paga' : 'paga')" class="action-button mobile-button">
             {{ despesa.pago ? 'Paga' : 'Pagar' }}
           </ion-button>
         </div>
@@ -178,7 +183,7 @@
           placeholder="URL da imagem (opcional)"
         ></ion-input>
 
-        <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingDespesa ? 'Atualizar despesa' : 'Criar despesa'">
+        <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingDespesa ? 'Atualizar despesa' : 'Criar despesa'" class="mobile-button">
           {{ editingDespesa ? 'Atualizar' : 'Criar' }} Despesa
         </ion-button>
       </form>
