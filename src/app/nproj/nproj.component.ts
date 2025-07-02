@@ -25,28 +25,16 @@ export class NprojComponent implements OnInit {
 
   ngOnInit() {
     this.setupInputHandlers();
-    this.disableGlobalKeyboardHandlers();
   }
 
   novoProjetoNome: string = '';
   novoProjetoDesc: string = '';
   valorTeste: string = '';
+  backspaceTestValue: string = '';
 
   @Output() projetoAdicionado = new EventEmitter<void>();
 
   constructor(private projService: ProjService) {}
-
-  disableGlobalKeyboardHandlers() {
-    // Remover listeners globais que podem estar interferindo
-    setTimeout(() => {
-      // Adicionar nosso próprio listener que permite todas as teclas
-      document.addEventListener('keydown', (event) => {
-        // Permitir todas as teclas sem interferência
-        console.log('Global keydown:', event.key, event.keyCode);
-        return true;
-      }, true); // Usar capture para interceptar antes dos outros listeners
-    }, 100);
-  }
 
   setupInputHandlers() {
     // Aguardar o DOM ser renderizado
@@ -55,58 +43,9 @@ export class NprojComponent implements OnInit {
       const descInput = document.getElementById('descProjeto') as HTMLInputElement;
       const testeInput = document.getElementById('testeInput') as HTMLInputElement;
 
-      if (nomeInput) {
-        // Remover todos os listeners existentes
-        nomeInput.removeEventListener('keydown', this.onNomeKeydown);
-        nomeInput.removeEventListener('keyup', this.onNomeKeyup);
-
-        // Adicionar novos listeners que não interferem
-        nomeInput.addEventListener('keydown', this.onNomeKeydown);
-        nomeInput.addEventListener('keyup', this.onNomeKeyup);
-      }
-
-      if (descInput) {
-        // Remover todos os listeners existentes
-        descInput.removeEventListener('keydown', this.onDescKeydown);
-        descInput.removeEventListener('keyup', this.onDescKeyup);
-
-        // Adicionar novos listeners que não interferem
-        descInput.addEventListener('keydown', this.onDescKeydown);
-        descInput.addEventListener('keyup', this.onDescKeyup);
-      }
-
-      if (testeInput) {
-        // Remover todos os listeners existentes
-        testeInput.removeEventListener('keydown', this.onTesteKeydownHandler);
-
-        // Adicionar novos listeners que não interferem
-        testeInput.addEventListener('keydown', this.onTesteKeydownHandler);
-      }
+      // Remover todos os listeners manuais - deixar o ngModel funcionar naturalmente
+      // Não adicionar listeners manuais que podem interferir
     }, 200);
-  }
-
-  // Handlers que não interferem com o comportamento padrão
-  onNomeKeydown = (event: KeyboardEvent) => {
-    console.log('Nome keydown:', event.key, event.keyCode);
-    // Não fazer nada, deixar o comportamento padrão funcionar
-  }
-
-  onNomeKeyup = (event: KeyboardEvent) => {
-    console.log('Nome keyup:', event.key, event.keyCode);
-  }
-
-  onDescKeydown = (event: KeyboardEvent) => {
-    console.log('Descrição keydown:', event.key, event.keyCode);
-    // Não fazer nada, deixar o comportamento padrão funcionar
-  }
-
-  onDescKeyup = (event: KeyboardEvent) => {
-    console.log('Descrição keyup:', event.key, event.keyCode);
-  }
-
-  onTesteKeydownHandler = (event: KeyboardEvent) => {
-    console.log('Teste keydown:', event.key, event.keyCode);
-    // Não fazer nada, deixar o comportamento padrão funcionar
   }
 
   onSubmit(): void {
@@ -159,6 +98,15 @@ export class NprojComponent implements OnInit {
   onDescInput(event: any) {
     console.log('Input descrição:', event.target.value);
     console.log('Comprimento:', event.target.value.length);
+  }
+
+  onBackspaceTest(event: KeyboardEvent) {
+    console.log('Backspace test:', event.key, event.keyCode, event.type);
+    
+    if (event.key === 'Backspace') {
+      console.log('Backspace detectado!');
+      // Não fazer preventDefault
+    }
   }
 
 }

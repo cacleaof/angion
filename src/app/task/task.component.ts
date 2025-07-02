@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AccessibilityService } from '../services/accessibility.service';
+//import { AccessibilityService } from '../services/accessibility.service';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
 
@@ -50,17 +50,17 @@ export class TaskComponent implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private accessibilityService: AccessibilityService
+    //private accessibilityService: AccessibilityService
   ) {}
 
   ngOnInit() {
     this.carregarTarefas();
     this.carregarProjetos();
-    this.accessibilityService.setupComponentAccessibility();
+    //this.accessibilityService.setupComponentAccessibility();
   }
 
   ngOnDestroy() {
-    this.accessibilityService.clearFocusOnDestroy();
+    //this.accessibilityService.clearFocusOnDestroy();
   }
 
   navegarParaHome() {

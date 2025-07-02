@@ -1,5 +1,7 @@
 {
   "name": "app-angion",
-  "integrations": {},
-  "type": "angular-standalone"
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
 }

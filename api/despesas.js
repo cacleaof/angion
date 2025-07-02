@@ -24,7 +24,8 @@ export default async function handler(req, res) {
           descricao: 'Conta de energia elétrica',
           valor: 150.00,
           venc: '2024-01-15',
-          pago: false
+          pago: false,
+          cd: 'D'
         },
         {
           id: 2,
@@ -32,7 +33,8 @@ export default async function handler(req, res) {
           descricao: 'Plano de internet',
           valor: 89.90,
           venc: '2024-01-20',
-          pago: true
+          pago: true,
+          cd: 'D'
         }
       ];
 

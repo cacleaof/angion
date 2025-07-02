@@ -78,6 +78,7 @@
           <h2>{{ despesa.nome }}</h2>
           <p *ngIf="despesa.descricao">{{ despesa.descricao }}</p>
           <p class="valor" [class.paga]="despesa.pago">Valor: R$ {{ despesa.valor }}</p>
+          <p *ngIf="despesa.cd" class="tipo-cd">Tipo: {{ despesa.cd === 'D' ? 'Débito' : 'Crédito' }}</p>
           <p *ngIf="despesa.venc">Vencimento: {{ despesa.venc | date:'dd/MM/yyyy' }}</p>
           <p *ngIf="despesa.imagem && despesa.imagem !== ''" class="imagem">
             Imagem: {{ despesa.imagem }}
@@ -167,6 +168,17 @@
           required
           placeholder="Digite o valor"
         ></ion-input>
+
+        <ion-select
+          label="Tipo *"
+          [(ngModel)]="novaDespesa.cd"
+          name="cd"
+          placeholder="Selecione o tipo"
+          required
+        >
+          <ion-select-option value="D">D - Débito</ion-select-option>
+          <ion-select-option value="C">C - Crédito</ion-select-option>
+        </ion-select>
 
         <ion-input
           label="Data de Vencimento"

@@ -12,6 +12,18 @@
     <p>Valor do teste: "{{valorTeste}}"</p>
   </div>
 
+  <!-- Adicione este teste -->
+  <div style="border: 2px solid blue; padding: 10px; margin: 10px 0;">
+    <h4>TESTE BACKSPACE</h4>
+    <input
+      type="text"
+      id="backspaceTest"
+      placeholder="Teste backspace aqui"
+      style="width: 100%; padding: 8px; margin: 5px 0;"
+      (keydown)="onBackspaceTest($event)">
+    <p>Valor: "{{backspaceTestValue}}"</p>
+  </div>
+
   <form (ngSubmit)="onSubmit()">
     <div>
       <label for="nomeProjeto">Nome do Projeto:</label>

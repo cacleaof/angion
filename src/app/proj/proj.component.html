@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home">
+      <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home" class="mobile-button">
         Home
       </ion-button>
     </ion-buttons>
@@ -11,22 +11,29 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Projetos</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <div class="ion-padding">
+<ion-content>
+  <div class="recent-section">
     <div class="header-actions">
       <h2>Lista de Projetos</h2>
-      <ion-button (click)="abrirModal()" color="primary" aria-label="Adicionar novo projeto">
-        Novo Projeto
-      </ion-button>
+      <div class="button-group">
+        <ion-button
+          (click)="abrirModal()"
+          color="primary"
+          aria-label="Adicionar novo projeto"
+          class="add-button mobile-button">
+          Novo Projeto
+        </ion-button>
+      </div>
     </div>
 
-    <ion-button expand="block" (click)="carregarProjetos()" [disabled]="loading" aria-label="Atualizar lista de projetos">
+    <ion-button
+      expand="block"
+      (click)="carregarProjetos()"
+      [disabled]="loading"
+      size="small"
+      aria-label="Atualizar lista de projetos"
+      class="mobile-button"
+    >
       {{ loading ? 'Carregando...' : 'Atualizar' }}
     </ion-button>
 
@@ -35,7 +42,7 @@
     </div>
 
     <ion-list *ngIf="!loading && projetos.length > 0">
-      <ion-item *ngFor="let projeto of projetos">
+      <ion-item *ngFor="let projeto of projetos" (click)="abrirModal(projeto)">
         <ion-label>
           <h2>{{ projeto.nome || projeto.titulo || 'Projeto' }}</h2>
           <p *ngIf="projeto.descricao">{{ projeto.descricao }}</p>
@@ -43,12 +50,16 @@
           <p *ngIf="projeto.data_inicio">Início: {{ projeto.data_inicio | date:'dd/MM/yyyy' }}</p>
           <p *ngIf="projeto.data_fim">Fim: {{ projeto.data_fim | date:'dd/MM/yyyy' }}</p>
         </ion-label>
-        <ion-button slot="end" fill="clear" (click)="abrirModal(projeto)" color="primary" [attr.aria-label]="'Editar projeto ' + (projeto.nome || projeto.titulo)">
-          Editar
-        </ion-button>
-        <ion-button slot="end" fill="clear" (click)="deletarProjeto(projeto)" color="danger" [attr.aria-label]="'Deletar projeto ' + (projeto.nome || projeto.titulo)">
-          Deletar
-        </ion-button>
+
+        <!-- Botões de ação -->
+        <div slot="end" class="action-buttons" (click)="$event.stopPropagation()">
+          <ion-button fill="clear" (click)="abrirModal(projeto)" color="primary" [attr.aria-label]="'Editar projeto ' + (projeto.nome || projeto.titulo)" class="action-button mobile-button">
+            Editar
+          </ion-button>
+          <ion-button fill="clear" (click)="deletarProjeto(projeto)" color="danger" [attr.aria-label]="'Deletar projeto ' + (projeto.nome || projeto.titulo)" class="action-button mobile-button">
+            Deletar
+          </ion-button>
+        </div>
       </ion-item>
     </ion-list>
 
@@ -72,7 +83,7 @@
     <ion-content class="ion-padding">
       <form (ngSubmit)="salvarProjeto()">
         <ion-input
-          label="Nome do Projeto"
+          label="Nome do Projeto *"
           [(ngModel)]="novoProjeto.nome"
           name="nome"
           required
@@ -99,6 +110,7 @@
           [(ngModel)]="novoProjeto.data"
           name="data"
           type="date"
+          placeholder="Selecione a data de início"
         ></ion-input>
 
         <ion-input
@@ -106,9 +118,10 @@
           [(ngModel)]="novoProjeto.fim"
           name="fim"
           type="date"
+          placeholder="Selecione a data de fim"
         ></ion-input>
 
-        <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingProjeto ? 'Atualizar projeto' : 'Criar projeto'">
+        <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingProjeto ? 'Atualizar projeto' : 'Criar projeto'" class="mobile-button">
           {{ editingProjeto ? 'Atualizar' : 'Criar' }} Projeto
         </ion-button>
       </form>

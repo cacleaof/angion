@@ -140,13 +140,23 @@ export class AccessibilityService {
 
   private handleActivationKey(event: KeyboardEvent) {
     const target = event.target as HTMLElement;
+    
+    // Permitir todos os elementos de input funcionarem normalmente
+    if (target.tagName === 'ION-INPUT' || 
+        target.tagName === 'ION-TEXTAREA' || 
+        target.tagName === 'ION-SELECT' ||
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA') {
+      return; // Não interferir com inputs
+    }
+    
     if (target.tagName === 'ION-BUTTON' || target.closest('ion-button')) {
       // Permitir ativação de botões por teclado
       return;
     }
 
-    // Prevenir comportamento padrão para outros elementos
-    if (target.tagName !== 'ION-INPUT' && target.tagName !== 'ION-TEXTAREA' && target.tagName !== 'ION-SELECT') {
+    // Prevenir comportamento padrão apenas para elementos não-interativos
+    if (target.contentEditable !== 'true' && !target.isContentEditable) {
       event.preventDefault();
     }
   }

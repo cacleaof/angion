@@ -1,5 +1,5 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonHeader, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
+import { IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonHeader, IonToolbar, IonTitle, IonButtons, IonSelect, IonSelectOption, IonTextarea } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -13,7 +13,7 @@ import { Router } from '@angular/router';
   templateUrl: './despesa.component.html',
   styleUrls: ['./despesa.component.scss'],
   standalone: true,
-  imports: [IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonHeader, IonToolbar, IonTitle, IonButtons, CommonModule, FormsModule],
+  imports: [IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonHeader, IonToolbar, IonTitle, IonButtons, IonSelect, IonSelectOption, IonTextarea, CommonModule, FormsModule],
 })
 export class DespesaComponent implements OnInit, AfterViewInit {
   despesas: any[] = [];
@@ -32,7 +32,8 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     valor: '',
     venc: '',
     imagem: '',
-    pago: false
+    pago: false,
+    cd: 'D' // Campo CD com valor padrão 'D' (Débito)
   };
 
   // URL da API do environment
@@ -54,24 +55,8 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Aguardar o modal ser renderizado
-    setTimeout(() => {
-      const textarea = document.querySelector('ion-textarea textarea') as HTMLTextAreaElement;
-      if (textarea) {
-        console.log('Textarea encontrado:', textarea);
-
-        // Adicionar listener para verificar se está funcionando
-        textarea.addEventListener('input', (event) => {
-          console.log('Input event:', event);
-          console.log('Valor atual:', (event.target as HTMLTextAreaElement).value);
-        });
-
-        // Testar se consegue digitar
-        textarea.focus();
-        textarea.value = 'Teste com espaços 123';
-        console.log('Valor após teste:', textarea.value);
-      }
-    }, 500);
+    // Removido a manipulação manual do DOM que estava causando o erro
+    // O ion-textarea já funciona corretamente com ngModel
   }
 
   navegarParaHome() {
@@ -189,7 +174,8 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         valor: despesa.valor || '',
         venc: dataVencimento,
         imagem: despesa.imagem || '',
-        pago: despesa.pago || false
+        pago: despesa.pago || false,
+        cd: despesa.cd || 'D'
       };
     } else {
       this.editingDespesa = null;
@@ -199,7 +185,8 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         valor: '',
         venc: '',
         imagem: '',
-        pago: false
+        pago: false,
+        cd: 'D'
       };
     }
     this.showModal = true;
@@ -238,11 +225,13 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       const dadosParaSalvar = { ...this.novaDespesa };
       dadosParaSalvar.venc = this.formatarData(dadosParaSalvar.venc);
 
+      console.log('Dados sendo enviados:', dadosParaSalvar);
+
       if (this.editingDespesa) {
-        await firstValueFrom(this.http.put(`${this.apiUrl}/despesa/${this.editingDespesa.id}`, dadosParaSalvar));
+        await firstValueFrom(this.http.put(`${this.apiUrl}/despesas/${this.editingDespesa.id}`, dadosParaSalvar));
         console.log('Despesa atualizada:', dadosParaSalvar);
       } else {
-        await firstValueFrom(this.http.post(`${this.apiUrl}/despesa`, dadosParaSalvar));
+        await firstValueFrom(this.http.post(`${this.apiUrl}/despesas`, dadosParaSalvar));
         console.log('Despesa criada:', dadosParaSalvar);
       }
 
@@ -258,7 +247,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   async deletarDespesa(despesa: any) {
     if (confirm(`Tem certeza que deseja deletar a despesa "${despesa.nome}"?`)) {
       try {
-        await firstValueFrom(this.http.delete(`${this.apiUrl}/despesa/${despesa.id}`));
+        await firstValueFrom(this.http.delete(`${this.apiUrl}/despesas/${despesa.id}`));
         console.log('Despesa deletada:', despesa);
         this.carregarDespesas();
         alert('Despesa deletada com sucesso!');
@@ -275,7 +264,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       const dadosParaEnviar = { ...despesa, pago: novoStatus };
       dadosParaEnviar.venc = this.formatarData(dadosParaEnviar.venc);
 
-      await firstValueFrom(this.http.put(`${this.apiUrl}/despesa/${despesa.id}`, dadosParaEnviar));
+      await firstValueFrom(this.http.put(`${this.apiUrl}/despesas/${despesa.id}`, dadosParaEnviar));
 
       despesa.pago = novoStatus;
       console.log('Status de pagamento alterado:', despesa);
