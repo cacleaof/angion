@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -13,7 +14,7 @@ import { firstValueFrom } from 'rxjs';
   standalone: true,
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, FormsModule],
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   email: string = '';
   password: string = '';
   loading: boolean = false;
@@ -21,7 +22,19 @@ export class LoginPage {
   // URL da API do environment
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit() {
+    // Verificar se já está logado
+    if (this.authService.isLoggedIn() && this.authService.isTokenValid()) {
+      console.log('Usuário já logado, redirecionando...');
+      this.router.navigate(['/dashboard']);
+    }
+  }
 
   async login() {
     if (!this.email || !this.password) {
@@ -51,10 +64,14 @@ export class LoginPage {
       }
 
       console.log('Login bem-sucedido:', user);
+      
+      // Usar o serviço de autenticação para salvar o usuário
+      this.authService.login(user);
+      
       alert('Login realizado com sucesso!');
 
-      // Redirecionar para a página home após login
-      this.router.navigate(['/home']);
+      // Redirecionar para o dashboard após login
+      this.router.navigate(['/dashboard']);
 
     } catch (error) {
       console.error('Erro no login:', error);

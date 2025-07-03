@@ -375,3 +375,79 @@
     font-weight: 500;
   }
 }
+
+.title-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  
+  h2 {
+    margin: 0;
+    color: var(--ion-color-dark);
+  }
+  
+  .valor-total {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ion-color-primary);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    
+    .total-label {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    
+    .total-valor {
+      font-size: 1.1em;
+    }
+  }
+}
+
+.header-actions {
+  margin-bottom: 20px;
+  
+  .button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+  }
+}
+
+// Responsividade para mobile
+@media (max-width: 768px) {
+  .title-section {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+    
+    .valor-total {
+      justify-content: center;
+      font-size: 0.9em;
+    }
+  }
+  
+  .header-actions {
+    .button-group {
+      justify-content: center;
+      
+      .filter-button,
+      .add-button {
+        flex: 1;
+        min-width: 120px;
+      }
+    }
+  }
+}
+
+.parcela-info {
+  font-size: 0.8em;
+  color: var(--ion-color-primary);
+  font-weight: normal;
+  margin-left: 8px;
+}

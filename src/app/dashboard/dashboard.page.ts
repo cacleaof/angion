@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AccessibilityService } from '../services/accessibility.service';
+import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
 
@@ -12,11 +13,12 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: 'dashboard.page.html',
   styleUrls: ['dashboard.page.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, CommonModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, CommonModule],
 })
 export class DashboardPage implements OnInit, OnDestroy {
   despesas: any[] = [];
   loading: boolean = false;
+  userEmail: string = '';
 
   // URL da API do environment
   private apiUrl = environment.apiUrl;
@@ -24,12 +26,28 @@ export class DashboardPage implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private accessibilityService: AccessibilityService
+    private accessibilityService: AccessibilityService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    // Verificar se está logado
+    if (!this.authService.isLoggedIn()) {
+      console.log('Usuário não logado, redirecionando para login...');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Renovar token ao acessar o dashboard
+    this.authService.refreshToken();
+    
     this.carregarDespesas();
     this.accessibilityService.setupComponentAccessibility();
+    
+    // Obter email do usuário logado
+    this.userEmail = this.authService.getCurrentUserEmail();
+    
+    console.log('Dashboard carregado para usuário:', this.userEmail);
   }
 
   ngOnDestroy() {
@@ -60,5 +78,10 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   navegarParaTarefas() {
     this.router.navigate(['/task']);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

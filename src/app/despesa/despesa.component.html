@@ -14,7 +14,13 @@
 <ion-content>
   <div class="recent-section">
     <div class="header-actions">
-      <h2>Lista de Despesas</h2>
+      <div class="title-section">
+        <h2>Lista de Despesas</h2>
+        <div class="valor-total">
+          <span class="total-label">Total:</span>
+          <span class="total-valor">{{ formatarValor(valorTotal) }}</span>
+        </div>
+      </div>
       <div class="button-group">
         <ion-button
           (click)="filtrarDespesasMesAtual()"
@@ -33,7 +39,7 @@
         <ion-button
           (click)="filtrarDespesasNaoPagas()"
           [color]="mostrarApenasNaoPagas ? 'warning' : 'medium'"
-          aria-label="Mostrar apenas despesas não pagas"
+          aria-label="Mostrar apenas despesas não quitadas"
           class="filter-button mobile-button">
           {{ mostrarApenasNaoPagas ? 'Não Pagas' : 'Todas' }}
         </ion-button>
@@ -75,15 +81,20 @@
     <ion-list *ngIf="!loading && despesasFiltradas.length > 0">
       <ion-item *ngFor="let despesa of despesasFiltradas" [class.paga]="despesa.pago" (click)="abrirModal(despesa)">
         <ion-label>
-          <h2>{{ despesa.nome }}</h2>
+          <h2>
+            {{ despesa.nome }}
+            <span *ngIf="despesa.nparc && despesa.nparc > 1" class="parcela-info">
+              ({{ despesa.parc || 1 }}/{{ despesa.nparc }})
+            </span>
+          </h2>
           <p *ngIf="despesa.descricao">{{ despesa.descricao }}</p>
           <p class="valor" [class.paga]="despesa.pago">Valor: R$ {{ despesa.valor }}</p>
-          <p *ngIf="despesa.cd" class="tipo-cd">Tipo: {{ despesa.cd === 'D' ? 'Débito' : 'Crédito' }}</p>
+          <p *ngIf="despesa.CD" class="tipo-cd">Tipo: {{ despesa.CD === 'D' ? 'Débito' : 'Crédito' }}</p>
           <p *ngIf="despesa.venc">Vencimento: {{ despesa.venc | date:'dd/MM/yyyy' }}</p>
           <p *ngIf="despesa.imagem && despesa.imagem !== ''" class="imagem">
             Imagem: {{ despesa.imagem }}
           </p>
-          <p *ngIf="despesa.pago" class="status-pago">✓ Paga</p>
+          <p *ngIf="despesa.pago" class="status-pago">✓ Quitada</p>
         </ion-label>
 
         <!-- Botões de ação -->
@@ -95,7 +106,7 @@
             Deletar
           </ion-button>
           <ion-button fill="clear" (click)="marcarComoPaga(despesa)" [color]="despesa.pago ? 'success' : 'warning'" [attr.aria-label]="'Marcar despesa ' + despesa.nome + ' como ' + (despesa.pago ? 'não paga' : 'paga')" class="action-button mobile-button">
-            {{ despesa.pago ? 'Paga' : 'Pagar' }}
+            {{ despesa.pago ? 'Quitada' : 'Pagar' }}
           </ion-button>
         </div>
       </ion-item>
@@ -109,19 +120,19 @@
         Nenhuma despesa encontrada para {{ nomeProximoMes }}.
       </p>
       <p *ngIf="mostrarApenasNaoPagas && !mostrarApenasMesAtual && !mostrarApenasProximoMes">
-        Nenhuma despesa não paga encontrada.
+        Nenhuma despesa não quitada encontrada.
       </p>
       <p *ngIf="mostrarApenasMesAtual && mostrarApenasNaoPagas && !mostrarApenasProximoMes">
-        Nenhuma despesa não paga encontrada para {{ nomeMesAtual }}.
+        Nenhuma despesa não quitada encontrada para {{ nomeMesAtual }}.
       </p>
       <p *ngIf="mostrarApenasProximoMes && mostrarApenasNaoPagas && !mostrarApenasMesAtual">
-        Nenhuma despesa não paga encontrada para {{ nomeProximoMes }}.
+        Nenhuma despesa não quitada encontrada para {{ nomeProximoMes }}.
       </p>
       <p *ngIf="mostrarApenasMesAtual && mostrarApenasProximoMes && !mostrarApenasNaoPagas">
         Nenhuma despesa encontrada para {{ nomeMesAtual }} e {{ nomeProximoMes }}.
       </p>
       <p *ngIf="mostrarApenasMesAtual && mostrarApenasProximoMes && mostrarApenasNaoPagas">
-        Nenhuma despesa não paga encontrada para {{ nomeMesAtual }} e {{ nomeProximoMes }}.
+        Nenhuma despesa não quitada encontrada para {{ nomeMesAtual }} e {{ nomeProximoMes }}.
       </p>
       <p *ngIf="!mostrarApenasNaoPagas && !mostrarApenasMesAtual && !mostrarApenasProximoMes">
         Nenhuma despesa encontrada.
@@ -169,10 +180,28 @@
           placeholder="Digite o valor"
         ></ion-input>
 
+        <ion-input
+          label="Parcela Atual"
+          [(ngModel)]="novaDespesa.parc"
+          name="parc"
+          type="number"
+          min="1"
+          placeholder="Número da parcela atual"
+        ></ion-input>
+
+        <ion-input
+          label="Total de Parcelas"
+          [(ngModel)]="novaDespesa.nparc"
+          name="nparc"
+          type="number"
+          min="1"
+          placeholder="Número total de parcelas"
+        ></ion-input>
+
         <ion-select
           label="Tipo *"
-          [(ngModel)]="novaDespesa.cd"
-          name="cd"
+          [(ngModel)]="novaDespesa.CD"
+          name="CD"
           placeholder="Selecione o tipo"
           required
         >
@@ -188,12 +217,62 @@
           placeholder="Selecione a data de vencimento"
         ></ion-input>
 
-        <ion-input
-          label="Imagem (URL)"
-          [(ngModel)]="novaDespesa.imagem"
-          name="imagem"
-          placeholder="URL da imagem (opcional)"
-        ></ion-input>
+        <!-- Área de upload de boleto -->
+        <div class="boleto-upload-section">
+          <ion-label class="boleto-label">Boleto (Imagem)</ion-label>
+          
+          <!-- Área de colagem -->
+          <div 
+            class="paste-area" 
+            (paste)="onPaste($event)"
+            (click)="triggerFileInput()"
+            [class.has-image]="boletoImagePreview"
+            tabindex="0"
+            role="button"
+            aria-label="Clique para selecionar imagem ou cole uma imagem do boleto"
+          >
+            <div *ngIf="!boletoImagePreview" class="paste-placeholder">
+              <ion-icon name="image-outline" class="upload-icon"></ion-icon>
+              <p>Clique aqui ou cole uma imagem do boleto (Ctrl+V)</p>
+              <small>Formatos aceitos: PNG, JPG, JPEG</small>
+            </div>
+            
+            <div *ngIf="boletoImagePreview" class="image-preview">
+              <img [src]="boletoImagePreview" alt="Preview do boleto" />
+              <div class="image-overlay">
+                <ion-button 
+                  fill="clear" 
+                  color="danger" 
+                  (click)="removerBoleto($event)"
+                  aria-label="Remover imagem do boleto"
+                >
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input file oculto -->
+          <input 
+            #fileInput
+            type="file" 
+            accept="image/*" 
+            (change)="onFileSelected($event)"
+            style="display: none;"
+          />
+
+          <!-- Progress bar para upload -->
+          <div *ngIf="uploading" class="upload-progress">
+            <ion-progress-bar [value]="uploadProgress" color="primary"></ion-progress-bar>
+            <small>Enviando imagem... {{ uploadProgress * 100 | number:'1.0-0' }}%</small>
+          </div>
+
+          <!-- Mensagens de erro/sucesso -->
+          <div *ngIf="uploadError" class="upload-error">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>{{ uploadError }}</span>
+          </div>
+        </div>
 
         <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingDespesa ? 'Atualizar despesa' : 'Criar despesa'" class="mobile-button">
           {{ editingDespesa ? 'Atualizar' : 'Criar' }} Despesa

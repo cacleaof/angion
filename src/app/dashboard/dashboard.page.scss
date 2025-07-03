@@ -73,3 +73,25 @@ ion-item p {
   color: #7f8c8d;
   font-size: 12px;
 }
+
+.user-email {
+  font-size: 0.8em;
+  color: var(--ion-color-medium);
+  font-weight: normal;
+}
+
+.user-info {
+  background: var(--ion-color-light);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  
+  p {
+    margin: 0;
+    color: var(--ion-color-dark);
+    
+    strong {
+      color: var(--ion-color-primary);
+    }
+  }
+}

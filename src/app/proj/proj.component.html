@@ -42,7 +42,7 @@
     </div>
 
     <ion-list *ngIf="!loading && projetos.length > 0">
-      <ion-item *ngFor="let projeto of projetos" (click)="abrirModal(projeto)">
+      <ion-item *ngFor="let projeto of projetos" (click)="verDetalhesProjeto(projeto)">
         <ion-label>
           <h2>{{ projeto.nome || projeto.titulo || 'Projeto' }}</h2>
           <p *ngIf="projeto.descricao">{{ projeto.descricao }}</p>

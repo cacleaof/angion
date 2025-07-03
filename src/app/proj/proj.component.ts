@@ -192,4 +192,8 @@ export class ProjComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+  verDetalhesProjeto(projeto: any) {
+    this.router.navigate(['/projeto-detalhe', projeto.id]);
+  }
 }

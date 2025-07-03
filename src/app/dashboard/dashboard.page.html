@@ -2,19 +2,33 @@
   <ion-toolbar>
     <ion-title>
       Dashboard
+      <span *ngIf="userEmail" class="user-email"> - {{ userEmail }}</span>
     </ion-title>
+    <ion-buttons slot="end" *ngIf="userEmail">
+      <ion-button (click)="logout()" color="medium" size="small">
+        Sair
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Dashboard</ion-title>
+      <ion-title size="large">
+        Dashboard
+        <span *ngIf="userEmail" class="user-email"> - {{ userEmail }}</span>
+      </ion-title>
     </ion-toolbar>
   </ion-header>
 
   <div class="ion-padding">
     <h2>Bem-vindo ao Sistema</h2>
+    
+    <!-- Mostrar email do usuário se estiver logado -->
+    <div *ngIf="userEmail" class="user-info">
+      <p>Logado como: <strong>{{ userEmail }}</strong></p>
+    </div>
 
     <!-- Botões de Navegação -->
     <div class="navigation-buttons">
