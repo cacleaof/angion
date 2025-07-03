@@ -79,7 +79,11 @@
     </div>
 
     <ion-list *ngIf="!loading && despesasFiltradas.length > 0">
-      <ion-item *ngFor="let despesa of despesasFiltradas" [class.paga]="despesa.pago" (click)="abrirModal(despesa)">
+      <ion-item 
+        *ngFor="let despesa of despesasFiltradas; trackBy: trackByDespesa" 
+        [class.paga]="despesa.pago" 
+        (click)="abrirModal(despesa)"
+      >
         <ion-label>
           <h2>
             {{ despesa.nome }}
@@ -92,7 +96,8 @@
           <p *ngIf="despesa.CD" class="tipo-cd">Tipo: {{ despesa.CD === 'D' ? 'Débito' : 'Crédito' }}</p>
           <p *ngIf="despesa.venc">Vencimento: {{ despesa.venc | date:'dd/MM/yyyy' }}</p>
           <p *ngIf="despesa.imagem && despesa.imagem !== ''" class="imagem">
-            Imagem: {{ despesa.imagem }}
+            <img [src]="getImageUrl(despesa.imagem)" alt="Boleto" class="boleto-thumbnail" />
+            <span>Imagem: {{ despesa.imagem }}</span>
           </p>
           <p *ngIf="despesa.pago" class="status-pago">✓ Quitada</p>
         </ion-label>
@@ -105,7 +110,7 @@
           <ion-button fill="clear" (click)="deletarDespesa(despesa)" color="danger" [attr.aria-label]="'Deletar despesa ' + despesa.nome" class="action-button mobile-button">
             Deletar
           </ion-button>
-          <ion-button fill="clear" (click)="marcarComoPaga(despesa)" [color]="despesa.pago ? 'success' : 'warning'" [attr.aria-label]="'Marcar despesa ' + despesa.nome + ' como ' + (despesa.pago ? 'não paga' : 'paga')" class="action-button mobile-button">
+          <ion-button fill="clear" (click)="abrirModalPagamento(despesa)" [color]="despesa.pago ? 'success' : 'warning'" [attr.aria-label]="'Pagar despesa ' + despesa.nome" class="action-button mobile-button">
             {{ despesa.pago ? 'Quitada' : 'Pagar' }}
           </ion-button>
         </div>
@@ -278,6 +283,138 @@
           {{ editingDespesa ? 'Atualizar' : 'Criar' }} Despesa
         </ion-button>
       </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- Modal de Pagamento -->
+<ion-modal [isOpen]="showModalPagamento" (didDismiss)="fecharModalPagamento()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Pagamento - {{ despesaPagamento?.nome }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="fecharModalPagamento()" aria-label="Cancelar">Cancelar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div class="pagamento-content">
+        <!-- Informações da Despesa -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ despesaPagamento?.nome }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="despesa-info">
+              <div class="info-row">
+                <strong>Valor Original:</strong>
+                <span class="valor-original">R$ {{ despesaPagamento?.valor }}</span>
+              </div>
+              <div class="info-row" *ngIf="despesaPagamento?.venc">
+                <strong>Vencimento:</strong>
+                <span>{{ despesaPagamento?.venc | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="info-row" *ngIf="despesaPagamento?.descricao">
+                <strong>Descrição:</strong>
+                <span>{{ despesaPagamento?.descricao }}</span>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Imagem do Boleto -->
+        <ion-card *ngIf="despesaPagamento?.imagem && despesaPagamento?.imagem !== ''">
+          <ion-card-header>
+            <ion-card-title>Boleto</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="boleto-container">
+              <img 
+                [src]="getImageUrl(despesaPagamento?.imagem)" 
+                alt="Boleto" 
+                class="boleto-image"
+                (click)="ampliarImagem(despesaPagamento?.imagem)"
+              />
+              <div class="boleto-actions">
+                <ion-button 
+                  fill="clear" 
+                  color="primary" 
+                  (click)="ampliarImagem(despesaPagamento?.imagem)"
+                  aria-label="Ampliar imagem do boleto"
+                >
+                  <ion-icon name="expand-outline"></ion-icon>
+                  Ampliar
+                </ion-button>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Formulário de Pagamento -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Confirmar Pagamento</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <form (ngSubmit)="confirmarPagamento()">
+              <ion-input
+                label="Valor Pago *"
+                [(ngModel)]="valorPago"
+                name="valorPago"
+                type="number"
+                step="0.01"
+                required
+                placeholder="Digite o valor pago"
+                class="valor-pago-input"
+              ></ion-input>
+
+              <div class="diferenca-valor" *ngIf="diferencaValor !== 0">
+                <ion-badge [color]="diferencaValor > 0 ? 'success' : 'warning'">
+                  {{ diferencaValor > 0 ? 'Desconto' : 'Acréscimo' }}: R$ {{ Math.abs(diferencaValor) | number:'1.2-2' }}
+                </ion-badge>
+              </div>
+
+              <div class="pagamento-actions">
+                <ion-button 
+                  expand="block" 
+                  type="submit" 
+                  color="success" 
+                  [disabled]="!valorPago || valorPago <= 0"
+                  aria-label="Confirmar pagamento"
+                  class="mobile-button"
+                >
+                  <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+                  Confirmar Pagamento
+                </ion-button>
+              </div>
+            </form>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- Modal para ampliar imagem -->
+<ion-modal [isOpen]="showModalImagem" (didDismiss)="fecharModalImagem()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Boleto</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="fecharModalImagem()" aria-label="Fechar">Fechar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div class="imagem-ampliada-container">
+        <img 
+          [src]="imagemAmpliada" 
+          alt="Boleto ampliado" 
+          class="imagem-ampliada"
+        />
+      </div>
     </ion-content>
   </ng-template>
 </ion-modal>

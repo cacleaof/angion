@@ -1,5 +1,27 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
-import { IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonHeader, IonToolbar, IonTitle, IonButtons, IonSelect, IonSelectOption, IonTextarea, IonIcon, IonProgressBar } from '@ionic/angular/standalone';
+import { 
+  IonButton, 
+  IonContent, 
+  IonItem, 
+  IonLabel, 
+  IonList, 
+  IonModal, 
+  IonInput, 
+  IonHeader, 
+  IonToolbar, 
+  IonTitle, 
+  IonButtons, 
+  IonSelect, 
+  IonSelectOption, 
+  IonTextarea, 
+  IonIcon, 
+  IonProgressBar,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonBadge
+} from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -14,9 +36,29 @@ import { Router } from '@angular/router';
   styleUrls: ['./despesa.component.scss'],
   standalone: true,
   imports: [
-    IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, 
-    IonHeader, IonToolbar, IonTitle, IonButtons, IonSelect, IonSelectOption, 
-    IonTextarea, IonIcon, IonProgressBar, CommonModule, FormsModule
+    IonButton, 
+    IonContent, 
+    IonItem, 
+    IonLabel, 
+    IonList, 
+    IonModal, 
+    IonInput, 
+    IonHeader, 
+    IonToolbar, 
+    IonTitle, 
+    IonButtons, 
+    IonSelect, 
+    IonSelectOption, 
+    IonTextarea, 
+    IonIcon, 
+    IonProgressBar,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonBadge,
+    CommonModule, 
+    FormsModule
   ],
 })
 export class DespesaComponent implements OnInit, AfterViewInit {
@@ -58,6 +100,21 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   uploadProgress: number = 0;
   uploadError: string | null = null;
 
+  // Propriedades para modal de pagamento
+  showModalPagamento: boolean = false;
+  despesaPagamento: any = null;
+  valorPago: number = 0;
+  
+  // Propriedades para modal de imagem
+  showModalImagem: boolean = false;
+  imagemAmpliada: string = '';
+  
+  // Propriedade para cálculos
+  Math = Math;
+
+  // Cache para URLs de imagens
+  private imageUrlCache = new Map<string, string>();
+
   constructor(
     private http: HttpClient,
     private router: Router
@@ -95,26 +152,25 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   }
 
   async carregarDespesas() {
-    this.loading = true;
     try {
-      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/despesas`));
-      this.despesas = Array.isArray(response) ? response : [];
+      this.loading = true;
+      const response: any = await firstValueFrom(
+        this.http.get(`${this.apiUrl}/despesas`)
+      );
       
-      // Ordenar pelo vencimento (do mais próximo para o mais distante)
-      this.despesas.sort((a, b) => {
-        if (!a.venc) return 1;
-        if (!b.venc) return -1;
-        return new Date(a.venc).getTime() - new Date(b.venc).getTime();
-      });
-      
-      // Verificar e criar próximas parcelas automaticamente
-      await this.verificarECriarProximasParcelas();
-      
-      this.aplicarFiltro();
+      this.despesas = Array.isArray(response) ? response : (response.data || []);
       console.log('Despesas carregadas:', this.despesas);
+      
+      // Limpar cache de imagens ao recarregar
+      this.clearImageCache();
+      
+      await this.verificarECriarProximasParcelas();
+      this.aplicarFiltro();
     } catch (error) {
       console.error('Erro ao carregar despesas:', error);
-      alert('Erro ao carregar despesas');
+      // Em caso de erro, inicializar com array vazio
+      this.despesas = [];
+      this.despesasFiltradas = [];
     } finally {
       this.loading = false;
     }
@@ -202,7 +258,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
 
         // Recarregar despesas para incluir as novas parcelas
         const responseAtualizado: any = await firstValueFrom(this.http.get(`${this.apiUrl}/despesas`));
-        this.despesas = Array.isArray(responseAtualizado) ? responseAtualizado : [];
+        this.despesas = Array.isArray(responseAtualizado) ? responseAtualizado : (responseAtualizado.data || []);
         
         // Reordenar
         this.despesas.sort((a, b) => {
@@ -339,6 +395,31 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         parc: despesa.parc || 1,
         nparc: despesa.nparc || 1
       };
+
+      // Configurar preview da imagem se existir
+      if (despesa.imagem && despesa.imagem !== '') {
+        console.log('Imagem encontrada na despesa:', despesa.imagem);
+        
+        // Construir URL completa da imagem
+        let imageUrl = '';
+        if (despesa.imagem.startsWith('http')) {
+          imageUrl = despesa.imagem;
+        } else if (despesa.imagem.startsWith('/')) {
+          // Se começa com /, é um caminho relativo ao servidor
+          imageUrl = `http://localhost:3000${despesa.imagem}`;
+        } else {
+          // Se não tem /, adicionar
+          imageUrl = `http://localhost:3000/${despesa.imagem}`;
+        }
+        
+        console.log('URL da imagem construída:', imageUrl);
+        this.boletoImagePreview = imageUrl;
+        this.boletoFile = null; // Não temos o arquivo original, apenas a URL
+      } else {
+        console.log('Nenhuma imagem encontrada na despesa');
+        this.boletoImagePreview = null;
+        this.boletoFile = null;
+      }
     } else {
       this.editingDespesa = null;
       this.novaDespesa = {
@@ -352,13 +433,30 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         parc: 1,
         nparc: 1
       };
+      
+      // Limpar preview da imagem
+      this.boletoImagePreview = null;
+      this.boletoFile = null;
     }
+    
+    // Limpar erros de upload
+    this.uploadError = null;
+    this.uploading = false;
+    this.uploadProgress = 0;
+    
     this.showModal = true;
   }
 
   fecharModal() {
     this.showModal = false;
     this.editingDespesa = null;
+    
+    // Limpar preview da imagem
+    this.boletoImagePreview = null;
+    this.boletoFile = null;
+    this.uploadError = null;
+    this.uploading = false;
+    this.uploadProgress = 0;
   }
 
   // Função auxiliar para formatar data
@@ -560,5 +658,137 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     this.boletoFile = null;
     this.boletoImagePreview = null;
     this.novaDespesa.imagem = '';
+    
+    // Se estiver editando, marcar que a imagem foi removida
+    if (this.editingDespesa) {
+      console.log('Imagem removida da despesa em edição');
+    }
+  }
+
+  // Método otimizado para obter URL completa da imagem
+  getImageUrl(imagemPath: string): string {
+    if (!imagemPath || imagemPath === '') {
+      return '';
+    }
+    
+    // Verificar se já está no cache
+    if (this.imageUrlCache.has(imagemPath)) {
+      return this.imageUrlCache.get(imagemPath)!;
+    }
+    
+    // Se já é uma URL completa, retornar como está
+    if (imagemPath.startsWith('http')) {
+      this.imageUrlCache.set(imagemPath, imagemPath);
+      return imagemPath;
+    }
+    
+    // Extrair o nome do arquivo do caminho
+    const filename = imagemPath.split('/').pop();
+    if (filename) {
+      const fullUrl = `${environment.apiUrl}/imagem/${filename}`;
+      // Armazenar no cache
+      this.imageUrlCache.set(imagemPath, fullUrl);
+      return fullUrl;
+    }
+    
+    return '';
+  }
+
+  // Método para limpar cache quando necessário
+  private clearImageCache() {
+    this.imageUrlCache.clear();
+  }
+
+  // Métodos para modal de pagamento
+  abrirModalPagamento(despesa: any) {
+    this.despesaPagamento = despesa;
+    this.valorPago = parseFloat(despesa.valor) || 0;
+    this.showModalPagamento = true;
+  }
+
+  fecharModalPagamento() {
+    this.showModalPagamento = false;
+    this.despesaPagamento = null;
+    this.valorPago = 0;
+  }
+
+  // Getter para calcular diferença de valor
+  get diferencaValor(): number {
+    if (!this.despesaPagamento || !this.valorPago) return 0;
+    const valorOriginal = parseFloat(this.despesaPagamento.valor) || 0;
+    return this.valorPago - valorOriginal;
+  }
+
+  async confirmarPagamento() {
+    if (!this.valorPago || this.valorPago <= 0) {
+      alert('Digite um valor válido para o pagamento');
+      return;
+    }
+
+    try {
+      console.log('=== CONFIRMANDO PAGAMENTO ===');
+      console.log('ID da despesa:', this.despesaPagamento.id);
+      console.log('Valor pago:', this.valorPago);
+      console.log('=============================');
+
+      // Usar apenas os campos que existem no banco de dados
+      const dadosPagamento = {
+        ...this.despesaPagamento,
+        pago: true,
+        valorpg: this.valorPago,
+        // Formatar a data corretamente para o banco
+        venc: this.formatarData(this.despesaPagamento.venc)
+      };
+
+      console.log('Dados sendo enviados:', dadosPagamento);
+
+      const response: any = await firstValueFrom(
+        this.http.put(`${this.apiUrl}/despesa/${this.despesaPagamento.id}`, dadosPagamento)
+      );
+
+      console.log('Resposta do pagamento:', response);
+
+      // Atualizar a despesa na lista local
+      const index = this.despesas.findIndex(d => d.id === this.despesaPagamento.id);
+      if (index !== -1) {
+        this.despesas[index] = { 
+          ...this.despesas[index], 
+          pago: true, 
+          valorpg: this.valorPago 
+        };
+      }
+
+      this.fecharModalPagamento();
+      this.carregarDespesas();
+      alert('Pagamento confirmado com sucesso!');
+
+    } catch (error: any) {
+      console.error('Erro ao confirmar pagamento:', error);
+      console.error('Detalhes do erro:', {
+        status: error?.status,
+        message: error?.message,
+        error: error?.error
+      });
+      
+      alert('Erro ao confirmar pagamento. Verifique o console para mais detalhes.');
+    }
+  }
+
+  // Métodos para modal de imagem
+  ampliarImagem(imagemPath: string) {
+    if (imagemPath) {
+      this.imagemAmpliada = this.getImageUrl(imagemPath);
+      this.showModalImagem = true;
+    }
+  }
+
+  fecharModalImagem() {
+    this.showModalImagem = false;
+    this.imagemAmpliada = '';
+  }
+
+  // Método trackBy para otimizar o *ngFor
+  trackByDespesa(index: number, despesa: any): number {
+    return despesa.id || index;
   }
 }

@@ -451,3 +451,130 @@
   font-weight: normal;
   margin-left: 8px;
 }
+
+.boleto-thumbnail {
+  max-width: 100px;
+  max-height: 60px;
+  border-radius: 4px;
+  margin-right: 8px;
+  border: 1px solid var(--ion-color-light);
+  object-fit: cover;
+}
+
+.imagem {
+  display: flex;
+  align-items: center;
+  font-size: 0.8em;
+  color: var(--ion-color-medium);
+  margin-top: 4px;
+}
+
+// Estilos para modal de pagamento
+.pagamento-content {
+  .despesa-info {
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--ion-color-light);
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .valor-original {
+        font-weight: bold;
+        color: var(--ion-color-primary);
+        font-size: 1.1em;
+      }
+    }
+  }
+  
+  .boleto-container {
+    text-align: center;
+    
+    .boleto-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+      border: 1px solid var(--ion-color-light);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+    
+    .boleto-actions {
+      margin-top: 10px;
+    }
+  }
+  
+  .valor-pago-input {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    font-size: 1.1em;
+    font-weight: bold;
+  }
+  
+  .diferenca-valor {
+    text-align: center;
+    margin: 15px 0;
+    
+    ion-badge {
+      font-size: 1em;
+      padding: 8px 16px;
+    }
+  }
+  
+  .pagamento-actions {
+    margin-top: 20px;
+  }
+}
+
+// Estilos para modal de imagem ampliada
+.imagem-ampliada-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  
+  .imagem-ampliada {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .pagamento-content {
+    .despesa-info {
+      .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+    }
+    
+    .boleto-container {
+      .boleto-image {
+        max-height: 250px;
+      }
+    }
+  }
+  
+  .imagem-ampliada-container {
+    min-height: 300px;
+    
+    .imagem-ampliada {
+      max-height: 70vh;
+    }
+  }
+}
