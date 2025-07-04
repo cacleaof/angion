@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonModal, IonInput, IonTextarea } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonModal, IonInput, IonTextarea, IonBadge } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: 'proj.component.html',
   styleUrls: ['proj.component.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonModal, IonInput, IonTextarea, CommonModule, FormsModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonModal, IonInput, IonTextarea, IonBadge, CommonModule, FormsModule],
 })
 export class ProjComponent implements OnInit, OnDestroy {
   projetos: any[] = [];
@@ -195,5 +195,47 @@ export class ProjComponent implements OnInit, OnDestroy {
 
   verDetalhesProjeto(projeto: any) {
     this.router.navigate(['/projeto-detalhe', projeto.id]);
+  }
+
+  async marcarComoConcluido(projeto: any) {
+    if (confirm(`Tem certeza que deseja marcar o projeto "${projeto.nome}" como concluído?`)) {
+      try {
+        // Preparar dados para enviar - apenas os campos essenciais
+        const dadosParaEnviar = {
+          nome: projeto.nome,
+          descricao: projeto.descricao || '',
+          tipo: projeto.tipo || 'PROJETO',
+          uid: projeto.uid || 1,
+          data: this.formatarData(projeto.data),
+          fim: this.formatarData(projeto.fim),
+          status: 'CONCLUÍDO', // Apenas alterar o status
+          prioridade: projeto.prioridade || 2
+        };
+
+        console.log('Marcando projeto como concluído:', dadosParaEnviar);
+        
+        await firstValueFrom(this.http.put(`${this.apiUrl}/proj/${projeto.id}`, dadosParaEnviar));
+        
+        // Atualizar o projeto na lista local
+        const index = this.projetos.findIndex(p => p.id === projeto.id);
+        if (index !== -1) {
+          this.projetos[index] = { ...this.projetos[index], status: 'CONCLUÍDO' };
+        }
+        
+        console.log('Projeto marcado como concluído:', projeto.nome);
+        alert('Projeto marcado como concluído com sucesso!');
+        
+        // Recarregar a lista para garantir sincronização
+        this.carregarProjetos();
+      } catch (error: any) {
+        console.error('Erro ao marcar projeto como concluído:', error);
+        console.error('Detalhes do erro:', {
+          status: error?.status,
+          message: error?.message,
+          error: error?.error
+        });
+        alert('Erro ao marcar projeto como concluído');
+      }
+    }
   }
 }

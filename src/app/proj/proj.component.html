@@ -42,17 +42,39 @@
     </div>
 
     <ion-list *ngIf="!loading && projetos.length > 0">
-      <ion-item *ngFor="let projeto of projetos" (click)="verDetalhesProjeto(projeto)">
+      <ion-item 
+        *ngFor="let projeto of projetos" 
+        (click)="verDetalhesProjeto(projeto)"
+        [class.projeto-concluido]="projeto.status === 'CONCLUÍDO' || projeto.status === 'CONCLUIDO'">
         <ion-label>
-          <h2>{{ projeto.nome || projeto.titulo || 'Projeto' }}</h2>
+          <h2>
+            {{ projeto.nome || projeto.titulo || 'Projeto' }}
+            <ion-badge 
+              *ngIf="projeto.status === 'CONCLUÍDO' || projeto.status === 'CONCLUIDO'" 
+              color="success" 
+              class="status-badge">
+              Concluído
+            </ion-badge>
+          </h2>
           <p *ngIf="projeto.descricao">{{ projeto.descricao }}</p>
-          <p *ngIf="projeto.status" class="status">Status: {{ projeto.status }}</p>
+          <p *ngIf="projeto.status && projeto.status !== 'CONCLUÍDO' && projeto.status !== 'CONCLUIDO'" class="status">Status: {{ projeto.status }}</p>
           <p *ngIf="projeto.data_inicio">Início: {{ projeto.data_inicio | date:'dd/MM/yyyy' }}</p>
           <p *ngIf="projeto.data_fim">Fim: {{ projeto.data_fim | date:'dd/MM/yyyy' }}</p>
         </ion-label>
 
         <!-- Botões de ação -->
         <div slot="end" class="action-buttons" (click)="$event.stopPropagation()">
+          <!-- Botão Concluído - só mostra se o projeto não estiver concluído -->
+          <ion-button 
+            *ngIf="projeto.status !== 'CONCLUÍDO' && projeto.status !== 'CONCLUIDO'"
+            fill="clear" 
+            (click)="marcarComoConcluido(projeto)" 
+            color="success" 
+            [attr.aria-label]="'Marcar projeto ' + (projeto.nome || projeto.titulo) + ' como concluído'" 
+            class="action-button mobile-button">
+            Concluído
+          </ion-button>
+          
           <ion-button fill="clear" (click)="abrirModal(projeto)" color="primary" [attr.aria-label]="'Editar projeto ' + (projeto.nome || projeto.titulo)" class="action-button mobile-button">
             Editar
           </ion-button>

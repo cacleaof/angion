@@ -82,7 +82,10 @@
     </div>
 
     <ion-list *ngIf="!loading && tarefas.length > 0">
-      <ion-item *ngFor="let tarefa of tarefas" [class.selected]="tarefasSelecionadas.has(tarefa.id)">
+      <ion-item 
+        *ngFor="let tarefa of tarefas" 
+        [class.selected]="tarefasSelecionadas.has(tarefa.id)"
+        [class.tarefa-concluida]="isConcluida(tarefa)">
         <!-- Checkbox para seleção em massa -->
         <ion-checkbox
           *ngIf="modoEdicao"
@@ -103,18 +106,37 @@
         ></ion-checkbox>
 
         <ion-label [class.concluida]="isConcluida(tarefa)">
-          <h2>{{ tarefa.nome }}</h2>
+          <h2>
+            {{ tarefa.nome }}
+            <ion-badge 
+              *ngIf="isConcluida(tarefa)" 
+              color="success" 
+              class="status-badge">
+              Concluída
+            </ion-badge>
+          </h2>
           <p *ngIf="tarefa.descricao">{{ tarefa.descricao }}</p>
           <p *ngIf="tarefa.prioridade" class="prioridade" [style.color]="getPrioridadeColor(tarefa.prioridade)">
             Prioridade: {{ getPrioridadeNome(tarefa.prioridade) }}
           </p>
           <p *ngIf="tarefa.data">Data: {{ tarefa.data | date:'dd/MM/yyyy' }}</p>
           <p *ngIf="tarefa.proj" class="projeto">Projeto: {{ getProjetoNome(tarefa.proj) }}</p>
-          <p *ngIf="tarefa.status" class="status">Status: {{ tarefa.status }}</p>
+          <p *ngIf="tarefa.status && !isConcluida(tarefa)" class="status">Status: {{ tarefa.status }}</p>
         </ion-label>
 
         <!-- Botões de ação individuais (apenas quando não está em modo de edição) -->
         <div *ngIf="!modoEdicao" slot="end">
+          <!-- Botão Concluído - só mostra se a tarefa não estiver concluída -->
+          <ion-button 
+            *ngIf="!isConcluida(tarefa)"
+            fill="clear" 
+            (click)="marcarComoConcluida(tarefa)" 
+            color="success" 
+            [attr.aria-label]="'Marcar tarefa ' + tarefa.nome + ' como concluída'" 
+            class="action-button">
+            Concluído
+          </ion-button>
+          
           <ion-button fill="clear" (click)="abrirModal(tarefa)" color="primary" [attr.aria-label]="'Editar tarefa ' + tarefa.nome">
             Editar
           </ion-button>

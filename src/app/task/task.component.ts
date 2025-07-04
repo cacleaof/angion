@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -13,7 +13,7 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: 'task.component.html',
   styleUrls: ['task.component.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, CommonModule, FormsModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, CommonModule, FormsModule],
 })
 export class TaskComponent implements OnInit, OnDestroy {
   tarefas: any[] = [];
@@ -303,5 +303,65 @@ export class TaskComponent implements OnInit, OnDestroy {
     if (!projId) return '';
     const projeto = this.projetos.find(p => p.id == projId);
     return projeto ? projeto.nome : projId;
+  }
+
+  async marcarComoConcluida(tarefa: any) {
+    if (confirm(`Tem certeza que deseja marcar a tarefa "${tarefa.nome}" como concluída?`)) {
+      try {
+        // Preparar dados para enviar
+        const dadosParaEnviar = {
+          nome: tarefa.nome,
+          descricao: tarefa.descricao || '',
+          tipo: tarefa.tipo || 'TAREFA',
+          uid: tarefa.uid || 1,
+          proj: tarefa.proj || '',
+          data: this.formatarData(tarefa.data),
+          status: 'CONCLUÍDA', // Alterar status para concluída
+          prioridade: tarefa.prioridade || 2
+        };
+
+        console.log('Marcando tarefa como concluída:', dadosParaEnviar);
+        
+        await firstValueFrom(this.http.put(`${this.apiUrl}/task/${tarefa.id}`, dadosParaEnviar));
+        
+        // Atualizar a tarefa na lista local
+        const index = this.tarefas.findIndex(t => t.id === tarefa.id);
+        if (index !== -1) {
+          this.tarefas[index] = { ...this.tarefas[index], status: 'CONCLUÍDA' };
+        }
+        
+        console.log('Tarefa marcada como concluída:', tarefa.nome);
+        alert('Tarefa marcada como concluída com sucesso!');
+        
+        // Recarregar a lista para garantir sincronização
+        this.carregarTarefas();
+      } catch (error: any) {
+        console.error('Erro ao marcar tarefa como concluída:', error);
+        console.error('Detalhes do erro:', {
+          status: error?.status,
+          message: error?.message,
+          error: error?.error
+        });
+        alert('Erro ao marcar tarefa como concluída');
+      }
+    }
+  }
+
+  // Função auxiliar para formatar data (se não existir)
+  private formatarData(data: any): string | null {
+    if (!data) return null;
+
+    // Se já está no formato YYYY-MM-DD
+    if (typeof data === 'string' && data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return data;
+    }
+
+    // Converter para formato YYYY-MM-DD
+    const dataObj = new Date(data);
+    if (!isNaN(dataObj.getTime())) {
+      return dataObj.toISOString().split('T')[0];
+    }
+
+    return null;
   }
 }
