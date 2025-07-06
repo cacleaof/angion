@@ -6,7 +6,7 @@
       </ion-button>
     </ion-buttons>
     <ion-title>
-      {{ projeto?.nome || 'Projeto' }}
+      {{ getProjetoNome() }}
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -16,38 +16,26 @@
     Carregando projeto...
   </div>
 
-  <div *ngIf="!loading && projeto" class="ion-padding">
-    <!-- Detalhes do Projeto -->
+  <div *ngIf="!loading && projeto" class="container">
+    <!-- Card principal com nome e descrição -->
+    <ion-card class="main-card">
+      <ion-card-header>
+        <ion-card-title>{{ getProjetoNome() }}</ion-card-title>
+        <div *ngIf="projeto.descricao" class="project-description">
+          {{ getProjetoDescricao() }}
+        </div>
+      </ion-card-header>
+    </ion-card>
+
+    <!-- Seção de Status -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ projeto.nome }}</ion-card-title>
+        <ion-card-title>Status</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p *ngIf="projeto.descricao" class="descricao">{{ projeto.descricao }}</p>
-        
-        <div class="projeto-info">
-          <div class="info-item">
-            <strong>Status:</strong>
-            <ion-badge [color]="getStatusColor(projeto.status)">{{ projeto.status }}</ion-badge>
-          </div>
-          
-          <div class="info-item" *ngIf="projeto.data">
-            <strong>Data de Início:</strong>
-            <span>{{ projeto.data | date:'dd/MM/yyyy' }}</span>
-          </div>
-          
-          <div class="info-item" *ngIf="projeto.fim">
-            <strong>Data de Fim:</strong>
-            <span>{{ projeto.fim | date:'dd/MM/yyyy' }}</span>
-          </div>
-          
-          <div class="info-item" *ngIf="projeto.prioridade">
-            <strong>Prioridade:</strong>
-            <ion-badge [color]="getPrioridadeColor(projeto.prioridade)">
-              {{ getPrioridadeNome(projeto.prioridade) }}
-            </ion-badge>
-          </div>
-        </div>
+        <ion-badge [color]="getStatusColor(projeto.status)">
+          {{ projeto.status || 'Não definido' }}
+        </ion-badge>
       </ion-card-content>
     </ion-card>
 
@@ -84,6 +72,120 @@
         </div>
       </ion-card-content>
     </ion-card>
+
+    <!-- Projetos Dependentes -->
+    <ion-card *ngIf="projetosDependentes.length > 0">
+      <ion-card-header>
+        <ion-card-title>Projetos Dependentes</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let projetoDep of projetosDependentes" button (click)="navegarParaProjeto(projetoDep.id)">
+            <ion-label>
+              <h2>{{ projetoDep.nome }}</h2>
+              <p *ngIf="projetoDep.descricao">{{ projetoDep.descricao }}</p>
+              <div class="projeto-info">
+                <ion-badge [color]="getStatusColor(projetoDep.status)" class="status-badge">
+                  {{ projetoDep.status }}
+                </ion-badge>
+                <ion-badge [color]="getPrioridadeColor(projetoDep.prioridade)" class="prioridade-badge">
+                  {{ getPrioridadeNome(projetoDep.prioridade) }}
+                </ion-badge>
+                <span *ngIf="projetoDep.data" class="data">
+                  {{ projetoDep.data | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+            </ion-label>
+            <ion-icon slot="end" name="chevron-forward" color="medium"></ion-icon>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Tarefas dos Projetos Dependentes -->
+    <div *ngIf="projetosDependentes.length > 0" class="tarefas-projetos-dependentes">
+      <h2>Tarefas dos Projetos Dependentes</h2>
+      
+      <div *ngFor="let projetoDep of projetosDependentes" class="projeto-dependente-section">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ projetoDep.nome }}</ion-card-title>
+            <div class="estatisticas-projeto">
+              <span>Total: {{ getEstatisticasProjeto(projetoDep.id).total }}</span>
+              <span>Concluídas: {{ getEstatisticasProjeto(projetoDep.id).concluidas }}</span>
+              <span>Progresso: {{ getEstatisticasProjeto(projetoDep.id).percentualConcluido }}%</span>
+            </div>
+ <ion-card-content>
+            <ion-list *ngIf="tarefasDependentes.length > 0">
+              <ion-item *ngFor="let tarefa of tarefasDependentes" [class.concluida]="isConcluida(tarefa)">
+                <ion-checkbox
+                  slot="start"
+                  [checked]="isConcluida(tarefa)"
+                  [disabled]="true"
+                  [attr.aria-label]="'Tarefa ' + tarefa.nome + ' - ' + tarefa.status"
+                ></ion-checkbox>
+                
+                <ion-label>
+                  <h2 [class.concluida]="isConcluida(tarefa)">{{ tarefa.nome }}</h2>
+                  <p *ngIf="tarefa.descricao">{{ tarefa.descricao }}</p>
+                  <div class="tarefa-info">
+                    <ion-badge [color]="getStatusColor(tarefa.status)" class="status-badge">
+                      {{ tarefa.status }}
+                    </ion-badge>
+                    <ion-badge [color]="getPrioridadeColor(tarefa.prioridade)" class="prioridade-badge">
+                      {{ getPrioridadeNome(tarefa.prioridade) }}
+                    </ion-badge>
+                    <span *ngIf="tarefa.data" class="data">
+                      {{ tarefa.data | date:'dd/MM/yyyy' }}
+                    </span>
+                  </div>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+            
+            <div *ngIf="getTarefasDoProjeto(projetoDep.id).length === 0" class="no-data">
+              <p>Nenhuma tarefa encontrada para este projeto.</p>
+            </div>
+          </ion-card-content>
+
+
+
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list *ngIf="getTarefasDoProjeto(projetoDep.id).length > 0">
+              <ion-item *ngFor="let tarefa of getTarefasDoProjeto(projetoDep.id)" [class.concluida]="isConcluida(tarefa)">
+                <ion-checkbox
+                  slot="start"
+                  [checked]="isConcluida(tarefa)"
+                  [disabled]="true"
+                  [attr.aria-label]="'Tarefa ' + tarefa.nome + ' - ' + tarefa.status"
+                ></ion-checkbox>
+                
+                <ion-label>
+                  <h2 [class.concluida]="isConcluida(tarefa)">{{ tarefa.nome }}</h2>
+                  <p *ngIf="tarefa.descricao">{{ tarefa.descricao }}</p>
+                  <div class="tarefa-info">
+                    <ion-badge [color]="getStatusColor(tarefa.status)" class="status-badge">
+                      {{ tarefa.status }}
+                    </ion-badge>
+                    <ion-badge [color]="getPrioridadeColor(tarefa.prioridade)" class="prioridade-badge">
+                      {{ getPrioridadeNome(tarefa.prioridade) }}
+                    </ion-badge>
+                    <span *ngIf="tarefa.data" class="data">
+                      {{ tarefa.data | date:'dd/MM/yyyy' }}
+                    </span>
+                  </div>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+            
+            <div *ngIf="getTarefasDoProjeto(projetoDep.id).length === 0" class="no-data">
+              <p>Nenhuma tarefa encontrada para este projeto.</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
 
     <!-- Lista de Tarefas -->
     <div class="tarefas-section">

@@ -17,6 +17,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class DashboardPage implements OnInit, OnDestroy {
   despesas: any[] = [];
+  despesasNaoPagas: any[] = [];
   loading: boolean = false;
   userEmail: string = '';
 
@@ -59,7 +60,12 @@ export class DashboardPage implements OnInit, OnDestroy {
     try {
       const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/despesas`));
       this.despesas = Array.isArray(response) ? response : [];
+      
+      // Filtrar apenas despesas não pagas
+      this.despesasNaoPagas = this.despesas.filter(despesa => !despesa.pago);
+      
       console.log('Despesas carregadas:', this.despesas);
+      console.log('Despesas não pagas:', this.despesasNaoPagas);
     } catch (error) {
       console.error('Erro ao carregar despesas:', error);
       alert('Erro ao carregar despesas');

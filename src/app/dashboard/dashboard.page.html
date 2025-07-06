@@ -63,9 +63,9 @@
       </ion-button>
     </div>
 
-    <!-- Seção de Despesas Recentes -->
+    <!-- Seção de Despesas Não Pagas -->
     <div class="recent-section">
-      <h3>Despesas Recentes</h3>
+      <h3>Despesas Pendentes</h3>
 
       <ion-button
         expand="block"
@@ -81,25 +81,27 @@
         Carregando despesas...
       </div>
 
-      <ion-list *ngIf="!loading && despesas.length > 0">
-        <ion-item *ngFor="let despesa of despesas.slice(0, 5)">
+      <ion-list *ngIf="!loading && despesasNaoPagas.length > 0">
+        <ion-item *ngFor="let despesa of despesasNaoPagas.slice(0, 5)" class="despesa-pendente">
           <ion-label>
             <h2>{{ despesa.nome }}</h2>
             <p *ngIf="despesa.descricao">{{ despesa.descricao }}</p>
             <p class="valor">Valor: R$ {{ despesa.valor }}</p>
+            <p *ngIf="despesa.venc" class="vencimento">Vencimento: {{ despesa.venc | date:'dd/MM/yyyy' }}</p>
             <p *ngIf="despesa.imagem && despesa.imagem !== ''" class="imagem">
               Imagem: {{ despesa.imagem }}
             </p>
+            <p class="status-pendente">Status: Pendente</p>
           </ion-label>
         </ion-item>
       </ion-list>
 
-      <div *ngIf="!loading && despesas.length === 0" class="no-data">
-        <p>Nenhuma despesa encontrada.</p>
+      <div *ngIf="!loading && despesasNaoPagas.length === 0" class="no-data">
+        <p>Nenhuma despesa pendente encontrada.</p>
       </div>
 
-      <div *ngIf="!loading && despesas.length > 5" class="more-items">
-        <p>Mostrando 5 de {{ despesas.length }} despesas</p>
+      <div *ngIf="!loading && despesasNaoPagas.length > 5" class="more-items">
+        <p>Mostrando 5 de {{ despesasNaoPagas.length }} despesas pendentes</p>
       </div>
     </div>
   </div>

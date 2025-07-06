@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonCard, IonCardHeader, IonCardTitle, IonCardContent } from '@ionic/angular/standalone';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AccessibilityService } from '../services/accessibility.service';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
 
@@ -16,13 +17,15 @@ import { firstValueFrom } from 'rxjs';
     IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, 
     IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, 
     IonSelect, IonSelectOption, IonBadge, IonCard, IonCardHeader, IonCardTitle, 
-    IonCardContent, CommonModule, FormsModule
+    IonCardContent, IonIcon, CommonModule, FormsModule
   ],
 })
-export class ProjetoDetalheComponent implements OnInit {
+export class ProjetoDetalheComponent implements OnInit, OnDestroy {
   projeto: any = null;
   tarefas: any[] = [];
-  loading: boolean = false;
+  projetosDependentes: any[] = [];
+  tarefasDependentes: any[] = [];
+  loading = true;
   showModal: boolean = false;
   editingTarefa: any = null;
   projetoId: string = '';
@@ -57,45 +60,182 @@ export class ProjetoDetalheComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.route.params.subscribe(params => {
-      this.projetoId = params['id'];
-      if (this.projetoId) {
-        this.carregarProjeto();
-        this.carregarTarefasDoProjeto();
-      }
-    });
+    this.carregarProjeto();
+  }
+
+  ngOnDestroy() {
+    // Cleanup se necessário
+    console.log('ProjetoDetalheComponent destruído');
   }
 
   async carregarProjeto() {
-    this.loading = true;
     try {
-      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/proj/${this.projetoId}`));
-      this.projeto = response;
-      console.log('Projeto carregado:', this.projeto);
+      const id = this.route.snapshot.paramMap.get('id');
+      console.log('Projeto ID recebido:', id);
+
+      if (!id) {
+        console.error('ID do projeto não fornecido');
+        this.loading = false;
+        return;
+      }
+
+      console.log('Carregando projeto com ID:', id);
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/proj/${id}`));
+      
+      if (Array.isArray(response) && response.length > 0) {
+        this.projeto = response[0];
+        console.log('Projeto carregado (primeiro item do array):', this.projeto);
+        console.log('Nome do projeto carregado:', this.projeto.nome);
+        console.log('Estrutura completa do projeto:', JSON.stringify(this.projeto, null, 2));
+      } else {
+        this.projeto = response;
+        console.log('Projeto carregado (objeto único):', this.projeto);
+      }
+
+      this.loading = false;
+      await this.carregarTarefas();
+      await this.carregarProjetosDependentes();
     } catch (error) {
       console.error('Erro ao carregar projeto:', error);
-      alert('Erro ao carregar projeto');
-    } finally {
       this.loading = false;
     }
   }
 
-  async carregarTarefasDoProjeto() {
+  // Método para obter o nome do projeto de forma segura
+  getProjetoNome(): string {
+    if (this.projeto && this.projeto.nome) {
+      return this.projeto.nome;
+    }
+    return 'Projeto';
+  }
+
+  // Método para obter a descrição do projeto de forma segura
+  getProjetoDescricao(): string {
+    if (this.projeto && this.projeto.descricao) {
+      return this.projeto.descricao;
+    }
+    return 'Sem descrição';
+  }
+
+  async carregarTarefas() {
     try {
       const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/tasks`));
-      const todasTarefas = Array.isArray(response) ? response : [];
-      
-      // Filtrar tarefas que pertencem a este projeto
-      this.tarefas = todasTarefas.filter(tarefa => tarefa.proj === this.projetoId);
+      this.tarefas = Array.isArray(response) ? response.filter((tarefa: any) => tarefa.proj == this.projeto.id) : [];
       console.log('Tarefas do projeto carregadas:', this.tarefas);
+      console.log('Id do Projeto', this.projeto.id)
     } catch (error) {
-      console.error('Erro ao carregar tarefas do projeto:', error);
-      alert('Erro ao carregar tarefas do projeto');
+      console.error('Erro ao carregar tarefas:', error);
     }
+  }
+
+  async carregarProjetosDependentes() {
+    try {
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/projs`));
+      this.projetosDependentes = Array.isArray(response) ? response.filter((proj: any) => proj.dep === this.projeto.id) : [];
+      console.log('Projetos dependentes carregados:', this.projetosDependentes);
+      await this.carregarTarefasDependentes();
+    } catch (error) {
+      console.error('Erro ao carregar projetos dependentes:', error);
+    }
+  }
+
+  async carregarTarefasDependentes() {
+    try {
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/tasks`));
+      const tarefasDependentes: any[] = [];
+      
+      this.projetosDependentes.forEach((proj: any) => {
+        const tarefasDoProj = Array.isArray(response) ? response.filter((tarefa: any) => tarefa.proj == proj.id) : [];
+        tarefasDependentes.push(...tarefasDoProj);
+      });
+      
+      this.tarefasDependentes = tarefasDependentes;
+      console.log('Tarefas dos projetos dependentes carregadas:', this.tarefasDependentes);
+    } catch (error) {
+      console.error('Erro ao carregar tarefas dependentes:', error);
+    }
+  }
+
+  getStatusColor(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'concluído':
+      case 'concluido':
+      case 'finalizado':
+        return 'success';
+      case 'em andamento':
+      case 'andamento':
+        return 'warning';
+      case 'para fazer':
+      case 'pendente':
+        return 'danger';
+      default:
+        return 'medium';
+    }
+  }
+
+  getEstatisticas() {
+    const total = this.tarefas.length;
+    const concluidas = this.tarefas.filter(t => this.isConcluida(t)).length;
+    const pendentes = this.tarefas.filter(t => !this.isConcluida(t)).length;
+    const emAndamento = this.tarefas.filter(t => t.status === 'em andamento').length;
+    const percentualConcluido = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+
+    return {
+      total,
+      concluidas,
+      pendentes,
+      emAndamento,
+      percentualConcluido
+    };
+  }
+
+  getEstatisticasProjeto(projetoId: number) {
+    const tarefasDoProj = this.getTarefasDoProjeto(projetoId);
+    const total = tarefasDoProj.length;
+    const concluidas = tarefasDoProj.filter(t => this.isConcluida(t)).length;
+    const percentualConcluido = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+
+    return {
+      total,
+      concluidas,
+      percentualConcluido
+    };
+  }
+
+  getTarefasDoProjeto(projetoId: number) {
+    return this.tarefasDependentes.filter(tarefa => tarefa.proj === projetoId);
+  }
+
+  isConcluida(tarefa: any): boolean {
+    return tarefa.status === 'concluído' || tarefa.status === 'concluido' || tarefa.status === 'finalizado';
+  }
+
+  getPrioridadeColor(prioridade: number): string {
+    if (prioridade >= 8) return 'danger';
+    if (prioridade >= 5) return 'warning';
+    return 'success';
+  }
+
+  getPrioridadeNome(prioridade: number): string {
+    if (prioridade >= 8) return 'Alta';
+    if (prioridade >= 5) return 'Média';
+    return 'Baixa';
   }
 
   navegarParaProjetos() {
     this.router.navigate(['/proj']);
+  }
+
+  navegarParaProjeto(id: number) {
+    this.router.navigate(['/projeto-detalhe', id]);
+  }
+
+  navegarParaTarefas() {
+    this.router.navigate(['/task']);
+  }
+
+  navegarParaHome() {
+    this.router.navigate(['/home']);
   }
 
   abrirModal(tarefa?: any) {
@@ -189,7 +329,7 @@ export class ProjetoDetalheComponent implements OnInit {
       }
 
       this.fecharModal();
-      this.carregarTarefasDoProjeto();
+      this.carregarTarefas();
       alert(this.editingTarefa ? 'Tarefa atualizada com sucesso!' : 'Tarefa criada com sucesso!');
     } catch (error) {
       console.error('Erro ao salvar tarefa:', error);
@@ -201,72 +341,27 @@ export class ProjetoDetalheComponent implements OnInit {
     if (confirm(`Tem certeza que deseja deletar a tarefa "${tarefa.nome}"?`)) {
       try {
         await firstValueFrom(this.http.delete(`${this.apiUrl}/task/${tarefa.id}`));
-        console.log('Tarefa deletada:', tarefa);
-        this.carregarTarefasDoProjeto();
-        alert('Tarefa deletada com sucesso!');
+        console.log('Tarefa deletada:', tarefa.nome);
+        await this.carregarTarefas();
       } catch (error) {
         console.error('Erro ao deletar tarefa:', error);
-        alert('Erro ao deletar tarefa');
       }
     }
   }
 
   async alterarStatusTarefa(tarefa: any) {
     try {
-      const novoStatus = tarefa.status === 'CONCLUÍDA' ? 'PENDENTE' : 'CONCLUÍDA';
-      await firstValueFrom(this.http.put(`${this.apiUrl}/task/${tarefa.id}`, {
-        ...tarefa,
-        status: novoStatus
-      }));
-
-      tarefa.status = novoStatus;
-      console.log('Status da tarefa alterado:', tarefa);
+      const novoStatus = this.isConcluida(tarefa) ? 'para fazer' : 'concluído';
+      const response = await firstValueFrom(
+        this.http.put(`${this.apiUrl}/task/${tarefa.id}`, {
+          ...tarefa,
+          status: novoStatus
+        })
+      );
+      console.log('Status da tarefa alterado:', response);
+      await this.carregarTarefas();
     } catch (error) {
       console.error('Erro ao alterar status da tarefa:', error);
-      alert('Erro ao alterar status da tarefa');
     }
   }
-
-  isConcluida(tarefa: any): boolean {
-    return tarefa.status === 'CONCLUÍDA';
-  }
-
-  getPrioridadeColor(prioridade: number): string {
-    switch (prioridade) {
-      case 1: return 'success';
-      case 2: return 'primary';
-      case 3: return 'warning';
-      case 4: return 'danger';
-      default: return 'medium';
-    }
-  }
-
-  getPrioridadeNome(prioridade: number): string {
-    const prioridadeObj = this.prioridades.find(p => p.valor === prioridade);
-    return prioridadeObj ? prioridadeObj.nome : 'Média';
-  }
-
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'CONCLUÍDA': return 'success';
-      case 'EM ANDAMENTO': return 'warning';
-      case 'CANCELADA': return 'danger';
-      default: return 'medium';
-    }
-  }
-
-  getEstatisticas() {
-    const total = this.tarefas.length;
-    const concluidas = this.tarefas.filter(t => t.status === 'CONCLUÍDA').length;
-    const pendentes = this.tarefas.filter(t => t.status === 'PENDENTE').length;
-    const emAndamento = this.tarefas.filter(t => t.status === 'EM ANDAMENTO').length;
-    
-    return {
-      total,
-      concluidas,
-      pendentes,
-      emAndamento,
-      percentualConcluido: total > 0 ? Math.round((concluidas / total) * 100) : 0
-    };
-  }
-} 
+}

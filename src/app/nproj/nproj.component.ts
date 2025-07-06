@@ -29,6 +29,7 @@ export class NprojComponent implements OnInit {
 
   novoProjetoNome: string = '';
   novoProjetoDesc: string = '';
+  arquivoSelecionado: File | null = null;
   valorTeste: string = '';
   backspaceTestValue: string = '';
 
@@ -48,6 +49,21 @@ export class NprojComponent implements OnInit {
     }, 200);
   }
 
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      // Verificar se é um PDF
+      if (file.type === 'application/pdf') {
+        this.arquivoSelecionado = file;
+        console.log('Arquivo selecionado:', file.name);
+      } else {
+        alert('Por favor, selecione apenas arquivos PDF.');
+        event.target.value = '';
+        this.arquivoSelecionado = null;
+      }
+    }
+  }
+
   onSubmit(): void {
     console.log('Nome digitado:', `"${this.novoProjetoNome}"`);
     console.log('Comprimento do nome:', this.novoProjetoNome.length);
@@ -55,19 +71,37 @@ export class NprojComponent implements OnInit {
 
     // Permitir qualquer conteúdo, incluindo espaços
     if (this.novoProjetoNome !== null && this.novoProjetoNome !== undefined) {
-      this.projService.addProjeto({
+      const projetoData = {
         nome: this.novoProjetoNome,
         descricao: this.novoProjetoDesc
-      })
-        .subscribe({
-          next: (novoProj) => {
-            console.log('Projeto adicionado:', novoProj);
-            this.novoProjetoNome = '';
-            this.novoProjetoDesc = '';
-            this.projetoAdicionado.emit();
-          },
-          error: (err) => console.error('Erro ao adicionar projeto:', err)
-        });
+      };
+
+      if (this.arquivoSelecionado) {
+        // Criar projeto com PDF
+        this.projService.criarProjetoComPDF(projetoData, this.arquivoSelecionado)
+          .subscribe({
+            next: (novoProj) => {
+              console.log('Projeto com PDF adicionado:', novoProj);
+              this.novoProjetoNome = '';
+              this.novoProjetoDesc = '';
+              this.arquivoSelecionado = null;
+              this.projetoAdicionado.emit();
+            },
+            error: (err) => console.error('Erro ao adicionar projeto com PDF:', err)
+          });
+      } else {
+        // Criar projeto sem PDF
+        this.projService.addProjeto(projetoData)
+          .subscribe({
+            next: (novoProj) => {
+              console.log('Projeto adicionado:', novoProj);
+              this.novoProjetoNome = '';
+              this.novoProjetoDesc = '';
+              this.projetoAdicionado.emit();
+            },
+            error: (err) => console.error('Erro ao adicionar projeto:', err)
+          });
+      }
     } else {
       console.warn('O nome do projeto não pode estar vazio.');
     }
@@ -108,6 +142,5 @@ export class NprojComponent implements OnInit {
       // Não fazer preventDefault
     }
   }
-
 }
 

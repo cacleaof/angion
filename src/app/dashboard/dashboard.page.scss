@@ -95,3 +95,44 @@ ion-item p {
     }
   }
 }
+
+// Estilo para despesas pendentes
+.despesa-pendente {
+  --background: #fff3cd;
+  --border-color: #ffeaa7;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  
+  ion-label {
+    h2 {
+      color: #856404;
+      font-weight: bold;
+    }
+    
+    .valor {
+      color: #d63031;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    
+    .vencimento {
+      color: #e17055;
+      font-weight: bold;
+    }
+    
+    .status-pendente {
+      color: #d63031;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 0.9em;
+    }
+  }
+}
+
+// Estilo para a seção de despesas pendentes
+.recent-section {
+  h3 {
+    color: #d63031;
+    font-weight: bold;
+  }
+}

@@ -46,6 +46,17 @@
         autocomplete="off"
         spellcheck="false">
       <p>Descrição atual: "{{novoProjetoDesc}}"</p>
+
+      <!-- Campo para upload de arquivo PDF -->
+      <label for="arquivoPDF">Arquivo PDF (opcional):</label>
+      <input
+        type="file"
+        id="arquivoPDF"
+        name="arquivoPDF"
+        accept=".pdf"
+        (change)="onFileSelected($event)"
+        style="width: 100%; padding: 8px; margin: 5px 0;">
+      <p *ngIf="arquivoSelecionado">Arquivo selecionado: {{arquivoSelecionado.name}}</p>
     </div>
     <button type="submit">Adicionar Projeto</button>
   </form>

@@ -41,46 +41,86 @@
       Carregando projetos...
     </div>
 
+    <!-- Lista com Ionic corrigida -->
     <ion-list *ngIf="!loading && projetos.length > 0">
       <ion-item 
-        *ngFor="let projeto of projetos" 
+        *ngFor="let projeto of projetos; let i = index" 
         (click)="verDetalhesProjeto(projeto)"
         [class.projeto-concluido]="projeto.status === 'CONCLUÍDO' || projeto.status === 'CONCLUIDO'">
-        <ion-label>
-          <h2>
-            {{ projeto.nome || projeto.titulo || 'Projeto' }}
-            <ion-badge 
-              *ngIf="projeto.status === 'CONCLUÍDO' || projeto.status === 'CONCLUIDO'" 
-              color="success" 
-              class="status-badge">
-              Concluído
-            </ion-badge>
-          </h2>
-          <p *ngIf="projeto.descricao">{{ projeto.descricao }}</p>
-          <p *ngIf="projeto.status && projeto.status !== 'CONCLUÍDO' && projeto.status !== 'CONCLUIDO'" class="status">Status: {{ projeto.status }}</p>
-          <p *ngIf="projeto.data_inicio">Início: {{ projeto.data_inicio | date:'dd/MM/yyyy' }}</p>
-          <p *ngIf="projeto.data_fim">Fim: {{ projeto.data_fim | date:'dd/MM/yyyy' }}</p>
-        </ion-label>
+        
+        <!-- Conteúdo principal do item -->
+        <div class="projeto-content">
+          <div class="projeto-header">
+            <h2 class="projeto-nome">
+              {{ projeto.nome || projeto.titulo || 'Projeto sem nome' }}
+            </h2>
+            <div class="badges">
+              <ion-badge 
+                *ngIf="projeto.status === 'CONCLUÍDO' || projeto.status === 'CONCLUIDO'" 
+                color="success" 
+                class="status-badge">
+                Concluído
+              </ion-badge>
+              <ion-badge 
+                *ngIf="projeto.pdf_filename" 
+                color="primary" 
+                class="pdf-badge">
+                PDF
+              </ion-badge>
+            </div>
+          </div>
+          
+          <div class="projeto-details">
+            <p *ngIf="projeto.descricao" class="projeto-descricao">{{ projeto.descricao }}</p>
+            <p *ngIf="projeto.status && projeto.status !== 'CONCLUÍDO' && projeto.status !== 'CONCLUIDO'" class="status">Status: {{ projeto.status }}</p>
+            <p *ngIf="projeto.data" class="data">Início: {{ projeto.data | date:'dd/MM/yyyy' }}</p>
+            <p *ngIf="projeto.fim" class="data">Fim: {{ projeto.fim | date:'dd/MM/yyyy' }}</p>
+            <p *ngIf="projeto.pdf_filename" class="pdf-info">PDF: {{projeto.pdf_original_name || projeto.pdf_filename}}</p>
+          </div>
+        </div>
 
         <!-- Botões de ação -->
-        <div slot="end" class="action-buttons" (click)="$event.stopPropagation()">
-          <!-- Botão Concluído - só mostra se o projeto não estiver concluído -->
-          <ion-button 
-            *ngIf="projeto.status !== 'CONCLUÍDO' && projeto.status !== 'CONCLUIDO'"
-            fill="clear" 
-            (click)="marcarComoConcluido(projeto)" 
-            color="success" 
-            [attr.aria-label]="'Marcar projeto ' + (projeto.nome || projeto.titulo) + ' como concluído'" 
-            class="action-button mobile-button">
-            Concluído
-          </ion-button>
-          
-          <ion-button fill="clear" (click)="abrirModal(projeto)" color="primary" [attr.aria-label]="'Editar projeto ' + (projeto.nome || projeto.titulo)" class="action-button mobile-button">
-            Editar
-          </ion-button>
-          <ion-button fill="clear" (click)="deletarProjeto(projeto)" color="danger" [attr.aria-label]="'Deletar projeto ' + (projeto.nome || projeto.titulo)" class="action-button mobile-button">
-            Deletar
-          </ion-button>
+        <div slot="end" class="action-buttons-container" (click)="$event.stopPropagation()">
+          <div class="action-buttons">
+            <!-- Botões de PDF -->
+            <ion-button 
+              *ngIf="projeto.pdf_filename"
+              fill="clear" 
+              (click)="visualizarPDF(projeto)" 
+              color="primary" 
+              [attr.aria-label]="'Visualizar PDF do projeto ' + (projeto.nome || projeto.titulo)" 
+              class="action-button mobile-button">
+              Ver PDF
+            </ion-button>
+            
+            <ion-button 
+              *ngIf="projeto.pdf_filename"
+              fill="clear" 
+              (click)="downloadPDF(projeto)" 
+              color="secondary" 
+              [attr.aria-label]="'Download PDF do projeto ' + (projeto.nome || projeto.titulo)" 
+              class="action-button mobile-button">
+              Download
+            </ion-button>
+
+            <!-- Botão Concluído - só mostra se o projeto não estiver concluído -->
+            <ion-button 
+              *ngIf="projeto.status !== 'CONCLUÍDO' && projeto.status !== 'CONCLUIDO'"
+              fill="clear" 
+              (click)="marcarComoConcluido(projeto)" 
+              color="success" 
+              [attr.aria-label]="'Marcar projeto ' + (projeto.nome || projeto.titulo) + ' como concluído'" 
+              class="action-button mobile-button">
+              Concluído
+            </ion-button>
+            
+            <ion-button fill="clear" (click)="abrirModal(projeto)" color="primary" [attr.aria-label]="'Editar projeto ' + (projeto.nome || projeto.titulo)" class="action-button mobile-button">
+              Editar
+            </ion-button>
+            <ion-button fill="clear" (click)="deletarProjeto(projeto)" color="danger" [attr.aria-label]="'Deletar projeto ' + (projeto.nome || projeto.titulo)" class="action-button mobile-button">
+              Deletar
+            </ion-button>
+          </div>
         </div>
       </ion-item>
     </ion-list>
@@ -142,6 +182,22 @@
           type="date"
           placeholder="Selecione a data de fim"
         ></ion-input>
+
+        <!-- Campo para upload de arquivo PDF -->
+        <div class="file-upload-section">
+          <label for="arquivoPDF">Arquivo PDF (opcional):</label>
+          <input
+            type="file"
+            id="arquivoPDF"
+            name="arquivoPDF"
+            accept=".pdf"
+            (change)="onFileSelected($event)"
+            style="width: 100%; padding: 8px; margin: 5px 0;">
+          <p *ngIf="arquivoSelecionado">Arquivo selecionado: {{arquivoSelecionado.name}}</p>
+          <p *ngIf="editingProjeto && editingProjeto.pdf_filename" class="current-file">
+            Arquivo atual: {{editingProjeto.pdf_original_name || editingProjeto.pdf_filename}}
+          </p>
+        </div>
 
         <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingProjeto ? 'Atualizar projeto' : 'Criar projeto'" class="mobile-button">
           {{ editingProjeto ? 'Atualizar' : 'Criar' }} Projeto

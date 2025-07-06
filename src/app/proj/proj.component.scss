@@ -332,3 +332,207 @@ ion-modal ion-button {
   margin-left: 8px;
   font-size: 0.8em;
 }
+
+.projeto-nome {
+  flex: 1;
+  min-width: 0; // Permite que o texto seja cortado se necessário
+}
+
+.action-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: fit-content;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.action-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-size: 0.8rem;
+  min-width: auto;
+}
+
+.pdf-badge {
+  margin-left: 5px;
+  font-size: 0.7em;
+}
+
+.current-file {
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.file-upload-section {
+  margin: 15px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.file-upload-section label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.projeto-content {
+  flex: 1;
+  min-width: 0; // Importante para evitar overflow
+}
+
+.projeto-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.projeto-nome {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: bold;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badges {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.projeto-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.projeto-descricao {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.status {
+  margin: 0;
+  color: #333;
+  font-size: 0.9em;
+}
+
+.data {
+  margin: 0;
+  color: #666;
+  font-size: 0.8em;
+}
+
+.pdf-info {
+  margin: 0;
+  color: #007bff;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.status-badge {
+  font-size: 0.7em;
+}
+
+.pdf-badge {
+  font-size: 0.7em;
+}
+
+.action-buttons-container {
+  display: flex;
+  align-items: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  font-size: 0.8em;
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+// Garantir que o ion-item tenha espaço suficiente
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 0;
+}
+
+// Estilo para projetos concluídos
+.projeto-concluido {
+  opacity: 0.7;
+  
+  .projeto-nome {
+    text-decoration: line-through;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .projeto-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .badges {
+    align-self: flex-start;
+  }
+  
+  .action-buttons {
+    justify-content: flex-start;
+  }
+}
+
+// Header com cinza claro
+ion-header {
+  --background: #f5f5f5; // Cinza claro
+  --color: #333333; // Texto escuro para contraste
+}
+
+ion-toolbar {
+  --background: #f5f5f5; // Cinza claro
+  --color: #333333; // Texto escuro
+}
+
+ion-title {
+  --color: #333333; // Título escuro
+  font-weight: bold;
+}
+
+ion-button {
+  --color: #333333; // Botões escuros
+}
+
+// Estilo específico para o botão Home no header
+ion-header ion-button {
+  --color: #333333;
+  --background: transparent;
+  font-weight: bold;
+}
+
+// Hover effect para os botões do header
+ion-header ion-button:hover {
+  --background: rgba(0, 0, 0, 0.1);
+}
