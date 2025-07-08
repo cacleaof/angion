@@ -31,7 +31,8 @@ export class ProjComponent implements OnInit, OnDestroy {
     fim: '',
     status: 'ATIVO',
     prioridade: 2,
-    dep: null
+    dep: null,
+    obs: ''
   };
 
   // URL da API do environment
@@ -113,7 +114,8 @@ export class ProjComponent implements OnInit, OnDestroy {
         fim: dataFim,
         status: projeto.status || 'ATIVO',
         prioridade: projeto.prioridade || 2,
-        dep: projeto.dep || null
+        dep: projeto.dep || null,
+        obs: projeto.obs || ''
       };
     } else {
       this.editingProjeto = null;
@@ -126,7 +128,8 @@ export class ProjComponent implements OnInit, OnDestroy {
         fim: '',
         status: 'ATIVO',
         prioridade: 2,
-        dep: null
+        dep: null,
+        obs: ''
       };
     }
     this.arquivoSelecionado = null;
@@ -189,7 +192,8 @@ export class ProjComponent implements OnInit, OnDestroy {
         fim: this.formatarData(this.novoProjeto.fim),
         status: this.novoProjeto.status || 'ATIVO',
         prioridade: this.novoProjeto.prioridade || 2,
-        dep: this.novoProjeto.dep || null
+        dep: this.novoProjeto.dep || null,
+        obs: this.novoProjeto.obs || ''
       };
 
       console.log('Dados que serão enviados:', dadosParaEnviar);

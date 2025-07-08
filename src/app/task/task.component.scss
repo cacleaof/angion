@@ -176,3 +176,29 @@ ion-select {
   margin-left: 8px;
   font-size: 0.8em;
 }
+
+.obs-modal-content {
+  padding: 16px;
+  
+  h3 {
+    margin-bottom: 16px;
+    color: var(--ion-color-primary);
+  }
+  
+  p {
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+}
+
+.obs-textarea {
+  margin-bottom: 20px;
+}
+
+.obs-actions {
+  margin-top: 20px;
+}
+
+.confirm-button {
+  margin-top: 16px;
+}

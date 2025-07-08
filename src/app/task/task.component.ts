@@ -32,8 +32,14 @@ export class TaskComponent implements OnInit, OnDestroy {
     proj: '',
     data: '',
     status: 'PENDENTE',
-    prioridade: 2
+    prioridade: 2,
+    obs: ''
   };
+
+  // Adicionar propriedades para o modal de observações
+  showObsModal: boolean = false;
+  tarefaParaConcluir: any = null;
+  observacao: string = '';
 
   // URL da API do environment
   private apiUrl = environment.apiUrl;
@@ -192,15 +198,26 @@ export class TaskComponent implements OnInit, OnDestroy {
   abrirModal(tarefa?: any) {
     if (tarefa) {
       this.editingTarefa = tarefa;
+      
+      // Formatar a data para o formato esperado pelo input date
+      let dataFormatada = '';
+      if (tarefa.data) {
+        const data = new Date(tarefa.data);
+        if (!isNaN(data.getTime())) {
+          dataFormatada = data.toISOString().split('T')[0];
+        }
+      }
+      
       this.novaTarefa = {
         nome: tarefa.nome || '',
         descricao: tarefa.descricao || '',
         tipo: tarefa.tipo || 'TAREFA',
         uid: tarefa.uid || 1,
         proj: tarefa.proj || '',
-        data: tarefa.data || '',
+        data: dataFormatada, // Usar a data formatada
         status: tarefa.status || 'PENDENTE',
-        prioridade: tarefa.prioridade || 2
+        prioridade: tarefa.prioridade || 2,
+        obs: tarefa.obs || ''
       };
     } else {
       this.editingTarefa = null;
@@ -212,7 +229,8 @@ export class TaskComponent implements OnInit, OnDestroy {
         proj: '',
         data: '',
         status: 'PENDENTE',
-        prioridade: 2
+        prioridade: 2,
+        obs: ''
       };
     }
     this.showModal = true;
@@ -306,45 +324,68 @@ export class TaskComponent implements OnInit, OnDestroy {
   }
 
   async marcarComoConcluida(tarefa: any) {
-    if (confirm(`Tem certeza que deseja marcar a tarefa "${tarefa.nome}" como concluída?`)) {
-      try {
-        // Preparar dados para enviar
-        const dadosParaEnviar = {
-          nome: tarefa.nome,
-          descricao: tarefa.descricao || '',
-          tipo: tarefa.tipo || 'TAREFA',
-          uid: tarefa.uid || 1,
-          proj: tarefa.proj || '',
-          data: this.formatarData(tarefa.data),
-          status: 'CONCLUÍDA', // Alterar status para concluída
-          prioridade: tarefa.prioridade || 2
-        };
+    // Abrir modal para edição da observação
+    this.tarefaParaConcluir = tarefa;
+    this.observacao = tarefa.obs || '';
+    this.showObsModal = true;
+  }
 
-        console.log('Marcando tarefa como concluída:', dadosParaEnviar);
-        
-        await firstValueFrom(this.http.put(`${this.apiUrl}/task/${tarefa.id}`, dadosParaEnviar));
-        
-        // Atualizar a tarefa na lista local
-        const index = this.tarefas.findIndex(t => t.id === tarefa.id);
-        if (index !== -1) {
-          this.tarefas[index] = { ...this.tarefas[index], status: 'CONCLUÍDA' };
-        }
-        
-        console.log('Tarefa marcada como concluída:', tarefa.nome);
-        alert('Tarefa marcada como concluída com sucesso!');
-        
-        // Recarregar a lista para garantir sincronização
-        this.carregarTarefas();
-      } catch (error: any) {
-        console.error('Erro ao marcar tarefa como concluída:', error);
-        console.error('Detalhes do erro:', {
-          status: error?.status,
-          message: error?.message,
-          error: error?.error
-        });
-        alert('Erro ao marcar tarefa como concluída');
-      }
+  async confirmarConclusaoComObs() {
+    if (!this.tarefaParaConcluir) {
+      return;
     }
+
+    try {
+      // Preparar dados para enviar
+      const dadosParaEnviar = {
+        nome: this.tarefaParaConcluir.nome,
+        descricao: this.tarefaParaConcluir.descricao || '',
+        tipo: this.tarefaParaConcluir.tipo || 'TAREFA',
+        uid: this.tarefaParaConcluir.uid || 1,
+        proj: this.tarefaParaConcluir.proj || '',
+        data: this.formatarData(this.tarefaParaConcluir.data),
+        status: 'CONCLUÍDA', // Alterar status para concluída
+        prioridade: this.tarefaParaConcluir.prioridade || 2,
+        obs: this.observacao // Incluir a observação
+      };
+
+      console.log('Marcando tarefa como concluída com observação:', dadosParaEnviar);
+      
+      await firstValueFrom(this.http.put(`${this.apiUrl}/task/${this.tarefaParaConcluir.id}`, dadosParaEnviar));
+      
+      // Atualizar a tarefa na lista local
+      const index = this.tarefas.findIndex(t => t.id === this.tarefaParaConcluir.id);
+      if (index !== -1) {
+        this.tarefas[index] = { 
+          ...this.tarefas[index], 
+          status: 'CONCLUÍDA',
+          obs: this.observacao
+        };
+      }
+      
+      console.log('Tarefa marcada como concluída:', this.tarefaParaConcluir.nome);
+      alert('Tarefa marcada como concluída com sucesso!');
+      
+      // Fechar modal e limpar dados
+      this.fecharObsModal();
+      
+      // Recarregar a lista para garantir sincronização
+      this.carregarTarefas();
+    } catch (error: any) {
+      console.error('Erro ao marcar tarefa como concluída:', error);
+      console.error('Detalhes do erro:', {
+        status: error?.status,
+        message: error?.message,
+        error: error?.error
+      });
+      alert('Erro ao marcar tarefa como concluída');
+    }
+  }
+
+  fecharObsModal() {
+    this.showObsModal = false;
+    this.tarefaParaConcluir = null;
+    this.observacao = '';
   }
 
   // Função auxiliar para formatar data (se não existir)

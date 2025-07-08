@@ -182,37 +182,8 @@
           type="number"
           step="0.01"
           required
-          placeholder="Digite o valor"
+          placeholder="Digite o valor da despesa"
         ></ion-input>
-
-        <ion-input
-          label="Parcela Atual"
-          [(ngModel)]="novaDespesa.parc"
-          name="parc"
-          type="number"
-          min="1"
-          placeholder="Número da parcela atual"
-        ></ion-input>
-
-        <ion-input
-          label="Total de Parcelas"
-          [(ngModel)]="novaDespesa.nparc"
-          name="nparc"
-          type="number"
-          min="1"
-          placeholder="Número total de parcelas"
-        ></ion-input>
-
-        <ion-select
-          label="Tipo *"
-          [(ngModel)]="novaDespesa.CD"
-          name="CD"
-          placeholder="Selecione o tipo"
-          required
-        >
-          <ion-select-option value="D">D - Débito</ion-select-option>
-          <ion-select-option value="C">C - Crédito</ion-select-option>
-        </ion-select>
 
         <ion-input
           label="Data de Vencimento"
@@ -222,64 +193,89 @@
           placeholder="Selecione a data de vencimento"
         ></ion-input>
 
-        <!-- Área de upload de boleto -->
-        <div class="boleto-upload-section">
-          <ion-label class="boleto-label">Boleto (Imagem)</ion-label>
-          
-          <!-- Área de colagem -->
-          <div 
-            class="paste-area" 
-            (paste)="onPaste($event)"
-            (click)="triggerFileInput()"
-            [class.has-image]="boletoImagePreview"
-            tabindex="0"
-            role="button"
-            aria-label="Clique para selecionar imagem ou cole uma imagem do boleto"
-          >
-            <div *ngIf="!boletoImagePreview" class="paste-placeholder">
-              <ion-icon name="image-outline" class="upload-icon"></ion-icon>
-              <p>Clique aqui ou cole uma imagem do boleto (Ctrl+V)</p>
-              <small>Formatos aceitos: PNG, JPG, JPEG</small>
-            </div>
-            
-            <div *ngIf="boletoImagePreview" class="image-preview">
-              <img [src]="boletoImagePreview" alt="Preview do boleto" />
-              <div class="image-overlay">
-                <ion-button 
-                  fill="clear" 
-                  color="danger" 
-                  (click)="removerBoleto($event)"
-                  aria-label="Remover imagem do boleto"
-                >
-                  <ion-icon name="trash-outline"></ion-icon>
-                </ion-button>
-              </div>
-            </div>
-          </div>
+        <!-- Campo Código de Barras -->
+        <ion-input
+          label="Código de Barras"
+          [(ngModel)]="novaDespesa.codbar"
+          name="codbar"
+          placeholder="Digite o código de barras"
+        ></ion-input>
 
-          <!-- Input file oculto -->
-          <input 
-            #fileInput
-            type="file" 
-            accept="image/*" 
-            (change)="onFileSelected($event)"
-            style="display: none;"
-          />
+        <!-- Campo PIX -->
+        <ion-input
+          label="PIX"
+          [(ngModel)]="novaDespesa.pix"
+          name="pix"
+          placeholder="Digite a chave PIX"
+        ></ion-input>
 
-          <!-- Progress bar para upload -->
-          <div *ngIf="uploading" class="upload-progress">
-            <ion-progress-bar [value]="uploadProgress" color="primary"></ion-progress-bar>
-            <small>Enviando imagem... {{ uploadProgress * 100 | number:'1.0-0' }}%</small>
-          </div>
+        <!-- Campos de Parcelas -->
+        <div class="form-row">
+          <ion-input
+            label="Parcela Atual"
+            [(ngModel)]="novaDespesa.parc"
+            name="parc"
+            type="number"
+            min="1"
+            placeholder="1"
+            class="form-half"
+          ></ion-input>
 
-          <!-- Mensagens de erro/sucesso -->
-          <div *ngIf="uploadError" class="upload-error">
-            <ion-icon name="alert-circle-outline"></ion-icon>
-            <span>{{ uploadError }}</span>
-          </div>
+          <ion-input
+            label="Total de Parcelas"
+            [(ngModel)]="novaDespesa.nparc"
+            name="nparc"
+            type="number"
+            min="1"
+            placeholder="1"
+            class="form-half"
+          ></ion-input>
         </div>
 
-        <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingDespesa ? 'Atualizar despesa' : 'Criar despesa'" class="mobile-button">
+        <!-- Campo CD (Débito/Crédito) -->
+        <ion-select
+          label="Tipo"
+          [(ngModel)]="novaDespesa.CD"
+          name="CD"
+          placeholder="Selecione o tipo"
+        >
+          <ion-select-option value="D">Débito</ion-select-option>
+          <ion-select-option value="C">Crédito</ion-select-option>
+        </ion-select>
+
+        <!-- Upload de Boleto -->
+        <div class="upload-section">
+          <label>Boleto/Comprovante:</label>
+          <div class="upload-area" 
+               (click)="triggerFileInput()"
+               (paste)="onPaste($event)"
+               tabindex="0">
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              style="display: none;"
+            />
+            <div *ngIf="!boletoImagePreview" class="upload-placeholder">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+              <p>Clique para selecionar uma imagem ou cole uma imagem (Ctrl+V)</p>
+            </div>
+            <div *ngIf="boletoImagePreview" class="image-preview">
+              <img [src]="boletoImagePreview" alt="Preview do boleto" />
+              <ion-button fill="clear" (click)="removerBoleto($event)" color="danger">
+                Remover
+              </ion-button>
+            </div>
+          </div>
+          <div *ngIf="uploading" class="upload-progress">
+            <ion-progress-bar [value]="uploadProgress"></ion-progress-bar>
+            <p>Enviando... {{ (uploadProgress * 100) | number:'1.0-0' }}%</p>
+          </div>
+          <p *ngIf="uploadError" class="upload-error">{{ uploadError }}</p>
+        </div>
+
+        <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingDespesa ? 'Atualizar despesa' : 'Criar despesa'">
           {{ editingDespesa ? 'Atualizar' : 'Criar' }} Despesa
         </ion-button>
       </form>
@@ -292,7 +288,7 @@
   <ng-template>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Pagamento - {{ despesaPagamento?.nome }}</ion-title>
+        <ion-title>Pagar Despesa</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="fecharModalPagamento()" aria-label="Cancelar">Cancelar</ion-button>
         </ion-buttons>
@@ -300,97 +296,109 @@
     </ion-header>
     <ion-content class="ion-padding">
       <div class="pagamento-content">
-        <!-- Informações da Despesa -->
+        <h3>Confirmar Pagamento</h3>
+        
         <ion-card>
           <ion-card-header>
             <ion-card-title>{{ despesaPagamento?.nome }}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <div class="despesa-info">
-              <div class="info-row">
-                <strong>Valor Original:</strong>
-                <span class="valor-original">R$ {{ despesaPagamento?.valor }}</span>
-              </div>
-              <div class="info-row" *ngIf="despesaPagamento?.venc">
-                <strong>Vencimento:</strong>
-                <span>{{ despesaPagamento?.venc | date:'dd/MM/yyyy' }}</span>
-              </div>
-              <div class="info-row" *ngIf="despesaPagamento?.descricao">
-                <strong>Descrição:</strong>
-                <span>{{ despesaPagamento?.descricao }}</span>
-              </div>
-            </div>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Imagem do Boleto -->
-        <ion-card *ngIf="despesaPagamento?.imagem && despesaPagamento?.imagem !== ''">
-          <ion-card-header>
-            <ion-card-title>Boleto</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="boleto-container">
+            <p><strong>Descrição:</strong> {{ despesaPagamento?.descricao }}</p>
+            <p><strong>Valor Original:</strong> R$ {{ formatarValor(despesaPagamento?.valor) }}</p>
+            <p><strong>Vencimento:</strong> {{ despesaPagamento?.venc | date:'dd/MM/yyyy' }}</p>
+            
+            <!-- Mostrar imagem do boleto se existir -->
+            <div *ngIf="despesaPagamento?.imagem" class="boleto-preview">
+              <p><strong>Boleto/Comprovante:</strong></p>
               <img 
-                [src]="getImageUrl(despesaPagamento?.imagem)" 
-                alt="Boleto" 
+                [src]="getImageUrl(despesaPagamento.imagem)" 
+                alt="Boleto/Comprovante" 
                 class="boleto-image"
-                (click)="ampliarImagem(despesaPagamento?.imagem)"
+                (click)="ampliarImagem(despesaPagamento.imagem)"
               />
-              <div class="boleto-actions">
-                <ion-button 
-                  fill="clear" 
-                  color="primary" 
-                  (click)="ampliarImagem(despesaPagamento?.imagem)"
-                  aria-label="Ampliar imagem do boleto"
-                >
-                  <ion-icon name="expand-outline"></ion-icon>
-                  Ampliar
-                </ion-button>
-              </div>
+              <p class="image-hint">Clique na imagem para ampliar</p>
             </div>
           </ion-card-content>
         </ion-card>
 
-        <!-- Formulário de Pagamento -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Confirmar Pagamento</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <form (ngSubmit)="confirmarPagamento()">
-              <ion-input
-                label="Valor Pago *"
-                [(ngModel)]="valorPago"
-                name="valorPago"
-                type="number"
-                step="0.01"
-                required
-                placeholder="Digite o valor pago"
-                class="valor-pago-input"
-              ></ion-input>
+        <ion-input
+          label="Valor Pago *"
+          [(ngModel)]="valorPago"
+          name="valorPago"
+          type="number"
+          step="0.01"
+          required
+          placeholder="Digite o valor pago"
+        ></ion-input>
 
-              <div class="diferenca-valor" *ngIf="diferencaValor !== 0">
-                <ion-badge [color]="diferencaValor > 0 ? 'success' : 'warning'">
-                  {{ diferencaValor > 0 ? 'Desconto' : 'Acréscimo' }}: R$ {{ Math.abs(diferencaValor) | number:'1.2-2' }}
-                </ion-badge>
-              </div>
+        <!-- Campo Data de Pagamento -->
+        <ion-input
+          label="Data de Pagamento *"
+          [(ngModel)]="dataPagamento"
+          name="dataPagamento"
+          type="date"
+          required
+          placeholder="Selecione a data de pagamento"
+        ></ion-input>
 
-              <div class="pagamento-actions">
-                <ion-button 
-                  expand="block" 
-                  type="submit" 
-                  color="success" 
-                  [disabled]="!valorPago || valorPago <= 0"
-                  aria-label="Confirmar pagamento"
-                  class="mobile-button"
-                >
-                  <ion-icon name="checkmark-outline" slot="start"></ion-icon>
-                  Confirmar Pagamento
-                </ion-button>
-              </div>
-            </form>
-          </ion-card-content>
-        </ion-card>
+        <!-- Campo Código de Barras - Clicável -->
+        <div class="copyable-field">
+          <ion-input
+            label="Código de Barras"
+            [(ngModel)]="codbarPagamento"
+            name="codbarPagamento"
+            placeholder="Digite o código de barras"
+            readonly
+            class="copyable-input"
+          ></ion-input>
+          <ion-button 
+            fill="clear" 
+            (click)="copiarCodigoBarras()" 
+            color="primary"
+            [disabled]="!codbarPagamento"
+            class="copy-button"
+            [attr.aria-label]="'Copiar código de barras'"
+          >copiar
+            <ion-icon name="copy-outline"></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- Campo PIX - Clicável -->
+        <div class="copyable-field">
+          <ion-input
+            label="PIX"
+            [(ngModel)]="pixPagamento"
+            name="pixPagamento"
+            placeholder="Digite a chave PIX"
+            readonly
+            class="copyable-input"
+          ></ion-input>
+          <ion-button 
+            fill="clear" 
+            (click)="copiarPix()" 
+            color="primary"
+            [disabled]="!pixPagamento"
+            class="copy-button"
+            [attr.aria-label]="'Copiar chave PIX'"
+          >copiar
+            <ion-icon name="copy-outline"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="pagamento-info">
+          <p><strong>Diferença:</strong> R$ {{ formatarValor(diferencaValor) }}</p>
+        </div>
+
+        <div class="pagamento-actions">
+          <ion-button 
+            expand="block" 
+            (click)="confirmarPagamento()" 
+            color="success" 
+            [attr.aria-label]="'Confirmar pagamento da despesa ' + despesaPagamento?.nome"
+            class="confirm-button">
+            Confirmar Pagamento
+          </ion-button>
+        </div>
       </div>
     </ion-content>
   </ng-template>

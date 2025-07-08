@@ -19,8 +19,7 @@ import {
   IonCard,
   IonCardHeader,
   IonCardTitle,
-  IonCardContent,
-  IonBadge
+  IonCardContent
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpEventType } from '@angular/common/http';
@@ -56,7 +55,6 @@ import { Router } from '@angular/router';
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
-    IonBadge,
     CommonModule, 
     FormsModule
   ],
@@ -69,7 +67,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   loading: boolean = false;
   showModal: boolean = false;
   editingDespesa: any = null;
-  mostrarApenasNaoPagas: boolean = false;
+  mostrarApenasNaoPagas: boolean = true;
   mostrarApenasMesAtual: boolean = false;
   mostrarApenasProximoMes: boolean = false;
   nomeMesAtual: string = '';
@@ -84,7 +82,9 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     pago: false,
     CD: 'D', // Campo CD com valor padrão 'D' (Débito)
     parc: 1, // Campo parc com valor padrão 1 (parcela atual)
-    nparc: 1 // Campo nparc com valor padrão 1 (número total de parcelas)
+    nparc: 1, // Campo nparc com valor padrão 1 (número total de parcelas)
+    codbar: '', // Adicionar campo codbar
+    pix: '' // Adicionar campo pix
   };
 
   // URL da API do environment
@@ -104,6 +104,9 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   showModalPagamento: boolean = false;
   despesaPagamento: any = null;
   valorPago: number = 0;
+  codbarPagamento: string = '';
+  pixPagamento: string = '';
+  dataPagamento: string = ''; // Adicionar campo data de pagamento
   
   // Propriedades para modal de imagem
   showModalImagem: boolean = false;
@@ -235,7 +238,9 @@ export class DespesaComponent implements OnInit, AfterViewInit {
             pago: false,
             CD: despesa.CD || 'D',
             parc: parcAtual + 1, // Próxima parcela
-            nparc: nparcTotal // Mantém o total de parcelas
+            nparc: nparcTotal, // Mantém o total de parcelas
+            codbar: despesa.codbar || '', // Adicionar campo codbar
+            pix: despesa.pix || '' // Adicionar campo pix
           };
 
           novasParcelas.push(proximaParcela);
@@ -393,7 +398,9 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         pago: despesa.pago || false,
         CD: despesa.CD || 'D',
         parc: despesa.parc || 1,
-        nparc: despesa.nparc || 1
+        nparc: despesa.nparc || 1,
+        codbar: despesa.codbar || '', // Adicionar campo codbar
+        pix: despesa.pix || '' // Adicionar campo pix
       };
 
       // Configurar preview da imagem se existir
@@ -431,7 +438,9 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         pago: false,
         CD: 'D',
         parc: 1,
-        nparc: 1
+        nparc: 1,
+        codbar: '', // Adicionar campo codbar
+        pix: '' // Adicionar campo pix
       };
       
       // Limpar preview da imagem
@@ -466,6 +475,14 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     // Se já está no formato YYYY-MM-DD
     if (typeof data === 'string' && data.match(/^\d{4}-\d{2}-\d{2}$/)) {
       return data;
+    }
+
+    // Se é uma string ISO (com T e Z)
+    if (typeof data === 'string' && data.includes('T')) {
+      const dataObj = new Date(data);
+      if (!isNaN(dataObj.getTime())) {
+        return dataObj.toISOString().split('T')[0];
+      }
     }
 
     // Converter para formato YYYY-MM-DD
@@ -533,8 +550,27 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     }
 
     try {
-      const dadosParaSalvar = { ...this.novaDespesa };
-      dadosParaSalvar.venc = this.formatarData(dadosParaSalvar.venc);
+      // Preparar dados para enviar com o nome correto do campo
+      const dadosParaSalvar: { [key: string]: any } = {
+        nome: this.novaDespesa.nome,
+        descricao: this.novaDespesa.descricao || '',
+        valor: parseFloat(this.novaDespesa.valor) || 0,
+        venc: this.formatarData(this.novaDespesa.venc),
+        imagem: this.novaDespesa.imagem || '',
+        pago: this.novaDespesa.pago || false,
+        tipo: this.novaDespesa.CD || 'D',
+        parc: parseInt(this.novaDespesa.parc) || 1,
+        nparc: parseInt(this.novaDespesa.nparc) || 1,
+        codbar: this.novaDespesa.codbar || '',
+        pix: this.novaDespesa.pix || ''
+      };
+
+      // Remover campos undefined ou null
+      Object.keys(dadosParaSalvar).forEach(key => {
+        if (dadosParaSalvar[key] === undefined || dadosParaSalvar[key] === null) {
+          delete dadosParaSalvar[key];
+        }
+      });
 
       console.log('Dados sendo enviados:', dadosParaSalvar);
 
@@ -549,8 +585,15 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       this.fecharModal();
       this.carregarDespesas();
       alert(this.editingDespesa ? 'Despesa atualizada com sucesso!' : 'Despesa criada com sucesso!');
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erro ao salvar despesa:', error);
+      console.error('Detalhes do erro:', {
+        status: error?.status,
+        message: error?.message,
+        error: error?.error
+      });
       this.uploadError = 'Erro ao salvar despesa.';
+      alert('Erro ao salvar despesa. Verifique os dados e tente novamente.');
     }
   }
 
@@ -620,35 +663,42 @@ export class DespesaComponent implements OnInit, AfterViewInit {
 
   onPaste(event: ClipboardEvent) {
     event.preventDefault();
-    const items = event.clipboardData?.items;
     
-    if (items) {
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
-          if (file) {
-            this.processImageFile(file);
-            break;
-          }
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf('image') !== -1) {
+        const file = item.getAsFile();
+        if (file) {
+          console.log('Imagem colada:', file);
+          this.processImageFile(file);
+          break;
         }
       }
     }
   }
 
   processImageFile(file: File) {
-    // Validação do tipo de arquivo
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-    if (!validTypes.includes(file.type)) {
-      this.uploadError = 'Formato de imagem não suportado. Use PNG ou JPG.';
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, cole apenas imagens.');
       return;
     }
-    this.uploadError = null;
-    this.boletoFile = file;
 
-    // Preview da imagem
+    // Validar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB.');
+      return;
+    }
+
+    // Criar preview
     const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.boletoImagePreview = e.target.result;
+    reader.onload = (e) => {
+      this.boletoImagePreview = e.target?.result as string;
+      this.boletoFile = file;
+      console.log('Preview da imagem criado');
     };
     reader.readAsDataURL(file);
   }
@@ -703,6 +753,13 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   abrirModalPagamento(despesa: any) {
     this.despesaPagamento = despesa;
     this.valorPago = parseFloat(despesa.valor) || 0;
+    this.codbarPagamento = despesa.codbar || '';
+    this.pixPagamento = despesa.pix || '';
+    
+    // Definir data de pagamento como hoje
+    const hoje = new Date();
+    this.dataPagamento = hoje.toISOString().split('T')[0];
+    
     this.showModalPagamento = true;
   }
 
@@ -710,6 +767,9 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     this.showModalPagamento = false;
     this.despesaPagamento = null;
     this.valorPago = 0;
+    this.codbarPagamento = '';
+    this.pixPagamento = '';
+    this.dataPagamento = ''; // Limpar campo data de pagamento
   }
 
   // Getter para calcular diferença de valor
@@ -720,57 +780,43 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   }
 
   async confirmarPagamento() {
-    if (!this.valorPago || this.valorPago <= 0) {
-      alert('Digite um valor válido para o pagamento');
+    if (!this.despesaPagamento) {
       return;
     }
 
     try {
-      console.log('=== CONFIRMANDO PAGAMENTO ===');
-      console.log('ID da despesa:', this.despesaPagamento.id);
-      console.log('Valor pago:', this.valorPago);
-      console.log('=============================');
-
-      // Usar apenas os campos que existem no banco de dados
-      const dadosPagamento = {
-        ...this.despesaPagamento,
+      // Preparar dados para enviar com todos os campos necessários
+      const dadosParaEnviar = {
+        id: this.despesaPagamento.id,
+        nome: this.despesaPagamento.nome,
+        descricao: this.despesaPagamento.descricao || '',
+        valor: this.despesaPagamento.valor,
+        venc: this.formatarData(this.despesaPagamento.venc),
+        imagem: this.despesaPagamento.imagem || '',
         pago: true,
-        valorpg: this.valorPago,
-        // Formatar a data corretamente para o banco
-        venc: this.formatarData(this.despesaPagamento.venc)
+        tipo: this.despesaPagamento.tipo || 'D',
+        parc: this.despesaPagamento.parc || 1,
+        nparc: this.despesaPagamento.nparc || 1,
+        codbar: this.codbarPagamento,
+        pix: this.pixPagamento,
+        datap: this.dataPagamento, // Data de pagamento
+        valorpg: this.valorPago // Valor pago
       };
 
-      console.log('Dados sendo enviados:', dadosPagamento);
+      console.log('Dados do pagamento:', dadosParaEnviar);
 
-      const response: any = await firstValueFrom(
-        this.http.put(`${this.apiUrl}/despesa/${this.despesaPagamento.id}`, dadosPagamento)
+      await firstValueFrom(
+        this.http.put(`${this.apiUrl}/despesa/${this.despesaPagamento.id}`, dadosParaEnviar)
       );
 
-      console.log('Resposta do pagamento:', response);
-
-      // Atualizar a despesa na lista local
-      const index = this.despesas.findIndex(d => d.id === this.despesaPagamento.id);
-      if (index !== -1) {
-        this.despesas[index] = { 
-          ...this.despesas[index], 
-          pago: true, 
-          valorpg: this.valorPago 
-        };
-      }
+      console.log('Despesa marcada como paga:', this.despesaPagamento.nome);
+      alert('Despesa marcada como paga com sucesso!');
 
       this.fecharModalPagamento();
       this.carregarDespesas();
-      alert('Pagamento confirmado com sucesso!');
-
-    } catch (error: any) {
-      console.error('Erro ao confirmar pagamento:', error);
-      console.error('Detalhes do erro:', {
-        status: error?.status,
-        message: error?.message,
-        error: error?.error
-      });
-      
-      alert('Erro ao confirmar pagamento. Verifique o console para mais detalhes.');
+    } catch (error) {
+      console.error('Erro ao marcar despesa como paga:', error);
+      alert('Erro ao marcar despesa como paga');
     }
   }
 
@@ -790,5 +836,60 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   // Método trackBy para otimizar o *ngFor
   trackByDespesa(index: number, despesa: any): number {
     return despesa.id || index;
+  }
+
+  // Método para copiar código de barras
+  async copiarCodigoBarras() {
+    if (this.codbarPagamento) {
+      try {
+        await navigator.clipboard.writeText(this.codbarPagamento);
+        this.mostrarMensagemCopiado('Código de barras copiado!');
+      } catch (error) {
+        console.error('Erro ao copiar código de barras:', error);
+        this.mostrarMensagemCopiado('Erro ao copiar código de barras');
+      }
+    }
+  }
+
+  // Método para copiar PIX
+  async copiarPix() {
+    if (this.pixPagamento) {
+      try {
+        await navigator.clipboard.writeText(this.pixPagamento);
+        this.mostrarMensagemCopiado('Chave PIX copiada!');
+      } catch (error) {
+        console.error('Erro ao copiar PIX:', error);
+        this.mostrarMensagemCopiado('Erro ao copiar PIX');
+      }
+    }
+  }
+
+  // Método para mostrar mensagem de feedback
+  mostrarMensagemCopiado(mensagem: string) {
+    // Criar um elemento temporário para mostrar a mensagem
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: var(--ion-color-success);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      z-index: 10000;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    toast.textContent = mensagem;
+    
+    document.body.appendChild(toast);
+    
+    // Remover após 2 segundos
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 2000);
   }
 }

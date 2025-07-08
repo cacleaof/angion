@@ -336,4 +336,30 @@ ion-card-header {
     line-height: 1.4;
     margin-top: 8px;
   }
+}
+
+.obs-modal-content {
+  padding: 16px;
+  
+  h3 {
+    margin-bottom: 16px;
+    color: var(--ion-color-primary);
+  }
+  
+  p {
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+}
+
+.obs-textarea {
+  margin-bottom: 20px;
+}
+
+.obs-actions {
+  margin-top: 20px;
+}
+
+.confirm-button {
+  margin-top: 16px;
 } 

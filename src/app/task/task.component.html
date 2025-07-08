@@ -185,6 +185,15 @@
           rows="3"
         ></ion-textarea>
 
+        <!-- Observações -->
+        <ion-textarea
+          label="Observações"
+          [(ngModel)]="novaTarefa.obs"
+          name="obs"
+          placeholder="Digite observações sobre a tarefa (opcional)"
+          rows="3"
+        ></ion-textarea>
+
         <!-- Linha com Prioridade e Status -->
         <div class="form-row">
           <ion-select
@@ -251,6 +260,46 @@
           </ion-button>
         </div>
       </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- Modal para edição de observação ao concluir tarefa -->
+<ion-modal [isOpen]="showObsModal" (didDismiss)="fecharObsModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Concluir Tarefa</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="fecharObsModal()" aria-label="Cancelar">Cancelar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div class="obs-modal-content">
+        <h3>Marcar como Concluída</h3>
+        <p><strong>Tarefa:</strong> {{ tarefaParaConcluir?.nome }}</p>
+        
+        <ion-textarea
+          label=" ba Observações (opcional)"
+          [(ngModel)]="observacao"
+          name="observacao"
+          placeholder="Digite observações sobre a conclusão da tarefa..."
+          rows="4"
+          class="obs-textarea"
+        ></ion-textarea>
+        
+        <div class="obs-actions">
+          <ion-button 
+            expand="block" 
+            (click)="confirmarConclusaoComObs()" 
+            color="success" 
+            [attr.aria-label]="'Confirmar conclusão da tarefa ' + tarefaParaConcluir?.nome"
+            class="confirm-button">
+            Confirmar Conclusão
+          </ion-button>
+        </div>
+      </div>
     </ion-content>
   </ng-template>
 </ion-modal>

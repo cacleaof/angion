@@ -53,6 +53,11 @@ export class ProjetoDetalheComponent implements OnInit, OnDestroy {
   // URL da API do environment
   private apiUrl = environment.apiUrl;
 
+  // Adicionar propriedades para o modal de observações
+  showObsModal: boolean = false;
+  tarefaParaConcluir: any = null;
+  observacao: string = '';
+
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -78,6 +83,9 @@ export class ProjetoDetalheComponent implements OnInit, OnDestroy {
         this.loading = false;
         return;
       }
+
+      // Definir o projetoId
+      this.projetoId = id;
 
       console.log('Carregando projeto com ID:', id);
       const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/proj/${id}`));
@@ -246,7 +254,7 @@ export class ProjetoDetalheComponent implements OnInit, OnDestroy {
         descricao: tarefa.descricao || '',
         tipo: tarefa.tipo || 'TAREFA',
         uid: tarefa.uid || 1,
-        proj: this.projetoId, // Sempre usar o ID do projeto atual
+        proj: this.projeto.id, // Usar this.projeto.id em vez de this.projetoId
         data: this.formatarDataParaInput(tarefa.data),
         status: tarefa.status || 'PENDENTE',
         prioridade: tarefa.prioridade || 2
@@ -258,7 +266,7 @@ export class ProjetoDetalheComponent implements OnInit, OnDestroy {
         descricao: '',
         tipo: 'TAREFA',
         uid: 1,
-        proj: this.projetoId, // Sempre usar o ID do projeto atual
+        proj: this.projeto.id, // Usar this.projeto.id em vez de this.projetoId
         data: '',
         status: 'PENDENTE',
         prioridade: 2
@@ -314,7 +322,7 @@ export class ProjetoDetalheComponent implements OnInit, OnDestroy {
         descricao: this.novaTarefa.descricao || '',
         tipo: this.novaTarefa.tipo || 'TAREFA',
         uid: this.novaTarefa.uid || 1,
-        proj: this.projetoId,
+        proj: this.projeto.id, // Usar this.projeto.id em vez de this.projetoId
         data: this.formatarData(this.novaTarefa.data),
         status: this.novaTarefa.status || 'PENDENTE',
         prioridade: this.novaTarefa.prioridade || 2
@@ -363,5 +371,81 @@ export class ProjetoDetalheComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Erro ao alterar status da tarefa:', error);
     }
+  }
+
+  async marcarTarefaComoConcluida(tarefa: any) {
+    // Abrir modal para edição da observação
+    this.tarefaParaConcluir = tarefa;
+    this.observacao = tarefa.obs || '';
+    this.showObsModal = true;
+  }
+
+  async confirmarConclusaoComObs() {
+    if (!this.tarefaParaConcluir) {
+      return;
+    }
+
+    try {
+      // Preparar dados para enviar - apenas os campos essenciais
+      const dadosParaEnviar = {
+        nome: this.tarefaParaConcluir.nome,
+        descricao: this.tarefaParaConcluir.descricao || '',
+        tipo: this.tarefaParaConcluir.tipo || 'TAREFA',
+        uid: this.tarefaParaConcluir.uid || 1,
+        proj: this.tarefaParaConcluir.proj,
+        data: this.formatarData(this.tarefaParaConcluir.data),
+        status: 'CONCLUÍDO', // Apenas alterar o status
+        prioridade: this.tarefaParaConcluir.prioridade || 2,
+        obs: this.observacao // Incluir a observação
+      };
+
+      console.log('Marcando tarefa como concluída com observação:', dadosParaEnviar);
+      
+      await firstValueFrom(this.http.put(`${this.apiUrl}/task/${this.tarefaParaConcluir.id}`, dadosParaEnviar));
+      
+      // Atualizar a tarefa na lista local
+      const index = this.tarefas.findIndex(t => t.id === this.tarefaParaConcluir.id);
+      if (index !== -1) {
+        this.tarefas[index] = { 
+          ...this.tarefas[index], 
+          status: 'CONCLUÍDO',
+          obs: this.observacao
+        };
+      }
+      
+      // Atualizar também nas tarefas dependentes se necessário
+      const indexDependente = this.tarefasDependentes.findIndex(t => t.id === this.tarefaParaConcluir.id);
+      if (indexDependente !== -1) {
+        this.tarefasDependentes[indexDependente] = { 
+          ...this.tarefasDependentes[indexDependente], 
+          status: 'CONCLUÍDO',
+          obs: this.observacao
+        };
+      }
+      
+      console.log('Tarefa marcada como concluída:', this.tarefaParaConcluir.nome);
+      alert('Tarefa marcada como concluída com sucesso!');
+      
+      // Fechar modal e limpar dados
+      this.fecharObsModal();
+      
+      // Recarregar as tarefas para garantir sincronização
+      await this.carregarTarefas();
+      await this.carregarTarefasDependentes();
+    } catch (error: any) {
+      console.error('Erro ao marcar tarefa como concluída:', error);
+      console.error('Detalhes do erro:', {
+        status: error?.status,
+        message: error?.message,
+        error: error?.error
+      });
+      alert('Erro ao marcar tarefa como concluída');
+    }
+  }
+
+  fecharObsModal() {
+    this.showObsModal = false;
+    this.tarefaParaConcluir = null;
+    this.observacao = '';
   }
 }

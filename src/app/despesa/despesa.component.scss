@@ -471,6 +471,13 @@
 
 // Estilos para modal de pagamento
 .pagamento-content {
+  padding: 16px;
+  
+  h3 {
+    margin-bottom: 16px;
+    color: var(--ion-color-primary);
+  }
+
   .despesa-info {
     .info-row {
       display: flex;
@@ -532,9 +539,41 @@
     }
   }
   
+  .pagamento-info {
+    margin: 16px 0;
+    padding: 12px;
+    background-color: var(--ion-color-light);
+    border-radius: 8px;
+    
+    p {
+      margin: 0;
+      font-weight: bold;
+    }
+  }
+  
   .pagamento-actions {
     margin-top: 20px;
   }
+}
+
+.pagamento-info {
+  margin: 16px 0;
+  padding: 12px;
+  background-color: var(--ion-color-light);
+  border-radius: 8px;
+  
+  p {
+    margin: 0;
+    font-weight: bold;
+  }
+}
+
+.pagamento-actions {
+  margin-top: 20px;
+}
+
+.confirm-button {
+  margin-top: 16px;
 }
 
 // Estilos para modal de imagem ampliada
@@ -576,5 +615,134 @@
     .imagem-ampliada {
       max-height: 70vh;
     }
+  }
+}
+
+.copyable-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+  
+  .copyable-input {
+    flex: 1;
+    
+    ion-input {
+      --background: var(--ion-color-light);
+      --border-radius: 8px;
+      --padding-start: 12px;
+      --padding-end: 12px;
+      cursor: pointer;
+      
+      &:hover {
+        --background: var(--ion-color-light-shade);
+      }
+    }
+  }
+  
+  .copy-button {
+    margin: 0;
+    height: 40px;
+    min-width: 40px;
+    
+    ion-icon {
+      font-size: 18px;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+}
+
+// Estilo para o toast de feedback
+.copy-feedback {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--ion-color-success);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  z-index: 10000;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+.upload-area {
+  border: 2px dashed var(--ion-color-medium);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+  
+  &:hover {
+    border-color: var(--ion-color-primary);
+    background-color: var(--ion-color-light);
+  }
+  
+  &:focus {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 2px var(--ion-color-primary-tint);
+  }
+  
+  .upload-placeholder {
+    ion-icon {
+      font-size: 48px;
+      color: var(--ion-color-medium);
+      margin-bottom: 8px;
+    }
+    
+    p {
+      margin: 0;
+      color: var(--ion-color-medium);
+      font-size: 14px;
+    }
+  }
+  
+  .image-preview {
+    img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 4px;
+    }
+  }
+}
+
+.boleto-preview {
+  margin-top: 16px;
+  
+  p {
+    margin: 8px 0;
+  }
+  
+  .boleto-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 1px solid var(--ion-color-medium);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.02);
+    }
+  }
+  
+  .image-hint {
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    margin-top: 4px;
   }
 }
