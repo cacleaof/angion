@@ -73,6 +73,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   nomeMesAtual: string = '';
   nomeProximoMes: string = '';
   valorTotal: number = 0;
+  termoBusca: string = ''; // Nova propriedade para o termo de busca
   novaDespesa: any = {
     nome: '',
     descricao: '',
@@ -318,8 +319,71 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     this.aplicarFiltro();
   }
 
+  // Método para filtrar por busca
+  filtrarPorBusca(event: any) {
+    this.termoBusca = event.target.value || '';
+    this.aplicarFiltro();
+  }
+
+  // Método para verificar se uma despesa corresponde ao termo de busca
+  private despesaCorrespondeBusca(despesa: any, termo: string): boolean {
+    if (!termo || termo.trim() === '') {
+      return true; // Se não há termo de busca, incluir todas
+    }
+
+    const termoLower = termo.toLowerCase().trim();
+    
+    // Buscar no nome
+    if (despesa.nome && despesa.nome.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+    
+    // Buscar na descrição
+    if (despesa.descricao && despesa.descricao.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+    
+    // Buscar no valor
+    if (despesa.valor && despesa.valor.toString().includes(termoLower)) {
+      return true;
+    }
+    
+    // Buscar na data de vencimento
+    if (despesa.venc) {
+      const dataVencimento = new Date(despesa.venc);
+      const dataFormatada = dataVencimento.toLocaleDateString('pt-BR');
+      if (dataFormatada.includes(termoLower)) {
+        return true;
+      }
+    }
+    
+    // Buscar no código de barras
+    if (despesa.codbar && despesa.codbar.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+    
+    // Buscar no PIX
+    if (despesa.pix && despesa.pix.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+    
+    return false;
+  }
+
   aplicarFiltro() {
     let despesasFiltradas = this.despesas;
+
+    // Aplicar filtro de busca
+    if (this.termoBusca && this.termoBusca.trim() !== '') {
+      const termo = this.termoBusca.toLowerCase().trim();
+      despesasFiltradas = despesasFiltradas.filter(despesa => {
+        return (
+          (despesa.nome && despesa.nome.toLowerCase().includes(termo)) ||
+          (despesa.descricao && despesa.descricao.toLowerCase().includes(termo)) ||
+          (despesa.valor && despesa.valor.toString().includes(termo))
+        );
+      });
+    }
 
     // Aplicar filtro de mês atual
     if (this.mostrarApenasMesAtual) {
@@ -356,6 +420,20 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     if (this.mostrarApenasNaoPagas) {
       despesasFiltradas = despesasFiltradas.filter(despesa => !despesa.pago);
     }
+
+    // Ordenar por data de vencimento (mais antigas primeiro)
+    despesasFiltradas = despesasFiltradas.sort((a, b) => {
+      // Se uma despesa não tem vencimento, coloca no final
+      if (!a.venc && !b.venc) return 0;
+      if (!a.venc) return 1;
+      if (!b.venc) return -1;
+      
+      // Comparar datas de vencimento
+      const dataA = new Date(a.venc);
+      const dataB = new Date(b.venc);
+      
+      return dataA.getTime() - dataB.getTime(); // Ordem crescente (mais antigas primeiro)
+    });
 
     this.despesasFiltradas = despesasFiltradas;
     this.calcularValorTotal();
@@ -891,5 +969,61 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         document.body.removeChild(toast);
       }
     }, 2000);
+  }
+
+  // Método para verificar se uma despesa está vencida
+  isDespesaVencida(despesa: any): boolean {
+    if (!despesa.venc || despesa.pago) {
+      return false; // Se não tem vencimento ou já foi paga, não está vencida
+    }
+    
+    const dataVencimento = new Date(despesa.venc);
+    const dataAtual = new Date();
+    
+    // Resetar as horas para comparar apenas as datas
+    dataVencimento.setHours(0, 0, 0, 0);
+    dataAtual.setHours(0, 0, 0, 0);
+    
+    return dataVencimento < dataAtual;
+  }
+
+  // Método para copiar uma despesa
+  async copiarDespesa(despesa: any) {
+    try {
+      // Criar uma nova despesa baseada na despesa selecionada
+      const despesaCopiada = {
+        nome: `${despesa.nome} (Cópia)`,
+        descricao: despesa.descricao,
+        valor: despesa.valor,
+        venc: this.formatarData(despesa.venc), // <-- Aqui faz a formatação correta!
+        imagem: '',
+        pago: false, // Sempre começar como não paga
+        CD: despesa.CD || 'D',
+        parc: 1, // Sempre começar na primeira parcela
+        nparc: despesa.nparc || 1,
+        codbar: despesa.codbar || '',
+        pix: despesa.pix || ''
+      };
+      console.log('Despesa copiada:', despesaCopiada);
+
+      // Salvar a despesa copiada
+      const response: any = await firstValueFrom(
+        this.http.post(`${this.apiUrl}/despesa`, despesaCopiada)
+      );
+
+      if (response && response.id) {
+        console.log('Despesa copiada com sucesso:', response);
+        this.mostrarMensagemCopiado('Despesa copiada com sucesso!');
+        
+        // Recarregar a lista de despesas
+        await this.carregarDespesas();
+      } else {
+        console.error('Erro ao copiar despesa: resposta inválida');
+        this.mostrarMensagemCopiado('Erro ao copiar despesa');
+      }
+    } catch (error) {
+      console.error('Erro ao copiar despesa:', error);
+      this.mostrarMensagemCopiado('Erro ao copiar despesa');
+    }
   }
 }

@@ -6,7 +6,15 @@
       </ion-button>
     </ion-buttons>
     <ion-title>
-      Todas as Despesas (ordenadas por vencimento)
+      Ordenadas por vencimento
+      <ion-input
+        name="proc"
+        placeholder="Filtrar Dados"
+        [(ngModel)]="termoBusca"
+        (ionInput)="filtrarPorBusca($event)"
+        clearInput="true"
+        class="search-input-inline"
+      ></ion-input>
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -82,10 +90,11 @@
       <ion-item 
         *ngFor="let despesa of despesasFiltradas; trackBy: trackByDespesa" 
         [class.paga]="despesa.pago" 
+        [class.vencida]="isDespesaVencida(despesa)"
         (click)="abrirModal(despesa)"
       >
         <ion-label>
-          <h2>
+          <h2 [class.vencida]="isDespesaVencida(despesa)">
             {{ despesa.nome }}
             <span *ngIf="despesa.nparc && despesa.nparc > 1" class="parcela-info">
               ({{ despesa.parc || 1 }}/{{ despesa.nparc }})
@@ -94,7 +103,10 @@
           <p *ngIf="despesa.descricao">{{ despesa.descricao }}</p>
           <p class="valor" [class.paga]="despesa.pago">Valor: R$ {{ despesa.valor }}</p>
           <p *ngIf="despesa.CD" class="tipo-cd">Tipo: {{ despesa.CD === 'D' ? 'Débito' : 'Crédito' }}</p>
-          <p *ngIf="despesa.venc">Vencimento: {{ despesa.venc | date:'dd/MM/yyyy' }}</p>
+          <p *ngIf="despesa.venc" [class.vencida]="isDespesaVencida(despesa)">
+            Vencimento: {{ despesa.venc | date:'dd/MM/yyyy' }}
+            <span *ngIf="isDespesaVencida(despesa)" class="status-vencida">(VENCIDA)</span>
+          </p>
           <p *ngIf="despesa.imagem && despesa.imagem !== ''" class="imagem">
             <img [src]="getImageUrl(despesa.imagem)" alt="Boleto" class="boleto-thumbnail" />
             <span>Imagem: {{ despesa.imagem }}</span>
@@ -104,6 +116,9 @@
 
         <!-- Botões de ação -->
         <div slot="end" class="action-buttons" (click)="$event.stopPropagation()">
+          <ion-button fill="clear" (click)="copiarDespesa(despesa)" color="secondary" [attr.aria-label]="'Copiar despesa ' + despesa.nome" class="action-button mobile-button">
+            Copiar
+          </ion-button>
           <ion-button fill="clear" (click)="abrirModal(despesa)" color="primary" [attr.aria-label]="'Editar despesa ' + despesa.nome" class="action-button mobile-button">
             Editar
           </ion-button>
