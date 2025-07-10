@@ -86,6 +86,10 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.router.navigate(['/task']);
   }
 
+   navegarParaLib() {
+    this.router.navigate(['/lib']);
+  }
+
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);

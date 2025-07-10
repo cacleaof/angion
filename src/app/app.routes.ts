@@ -47,5 +47,15 @@ export const routes: Routes = [
     path: 'nproj',
     loadComponent: () => import('./nproj/nproj.component').then(m => m.NprojComponent),
     canActivate: [AuthGuard]
+  },
+    {
+    path: 'projtab',
+    loadComponent: () => import('./proj-tab/proj-tab.component').then(m => m.ProjTabComponent),
+    canActivate: [AuthGuard]
+  },
+    {
+    path: 'lib',
+    loadComponent: () => import('./lib/lib.component').then(m => m.LibComponent),
+    canActivate: [AuthGuard]
   }
 ];

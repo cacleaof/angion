@@ -73,7 +73,13 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   nomeMesAtual: string = '';
   nomeProximoMes: string = '';
   valorTotal: number = 0;
+  valorTotalFormatado: string = 'R$ 0,00'; // Nova propriedade para exibição
   termoBusca: string = ''; // Nova propriedade para o termo de busca
+  
+  // Novas propriedades para filtros de data
+  dataInicial: string = '';
+  dataFinal: string = '';
+  
   novaDespesa: any = {
     nome: '',
     descricao: '',
@@ -128,6 +134,10 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.carregarDespesas();
     this.definirNomesMeses();
+    // Garantir que o valor total seja calculado inicialmente
+    setTimeout(() => {
+      this.calcularValorTotal();
+    }, 100);
     // this.accessibilityService.setupComponentAccessibility();
   }
 
@@ -385,6 +395,28 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       });
     }
 
+    // Aplicar filtro de data inicial
+    if (this.dataInicial) {
+      const dataInicial = new Date(this.dataInicial);
+      despesasFiltradas = despesasFiltradas.filter(despesa => {
+        if (!despesa.venc) return false;
+        const dataVencimento = new Date(despesa.venc);
+        return dataVencimento >= dataInicial;
+      });
+    }
+
+    // Aplicar filtro de data final
+    if (this.dataFinal) {
+      const dataFinal = new Date(this.dataFinal);
+      // Ajustar para o final do dia (23:59:59)
+      dataFinal.setHours(23, 59, 59, 999);
+      despesasFiltradas = despesasFiltradas.filter(despesa => {
+        if (!despesa.venc) return false;
+        const dataVencimento = new Date(despesa.venc);
+        return dataVencimento <= dataFinal;
+      });
+    }
+
     // Aplicar filtro de mês atual
     if (this.mostrarApenasMesAtual) {
       const dataAtual = new Date();
@@ -440,19 +472,77 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   }
 
   calcularValorTotal() {
-    this.valorTotal = this.despesasFiltradas.reduce((total, despesa) => {
-      const valor = parseFloat(despesa.valor) || 0;
-      return total + valor;
-    }, 0);
-    
-    console.log('Valor total das despesas filtradas:', this.valorTotal);
+    try {
+      console.log('Calculando valor total...');
+      console.log('Despesas filtradas:', this.despesasFiltradas);
+      
+      this.valorTotal = this.despesasFiltradas.reduce((total, despesa) => {
+        // Garantir que o valor seja um número válido
+        let valor = 0;
+        if (despesa.valor) {
+          if (typeof despesa.valor === 'string') {
+            // Remover caracteres não numéricos exceto ponto e vírgula
+            const valorLimpo = despesa.valor.replace(/[^\d.,]/g, '');
+            // Substituir vírgula por ponto para conversão
+            const valorNumerico = valorLimpo.replace(',', '.');
+            valor = parseFloat(valorNumerico) || 0;
+          } else if (typeof despesa.valor === 'number') {
+            valor = despesa.valor;
+          }
+        }
+        
+        console.log(`Despesa: ${despesa.nome}, Valor original: ${despesa.valor}, Valor processado: ${valor}`);
+        return total + valor;
+      }, 0);
+      
+      // Atualizar o valor formatado
+      this.atualizarValorFormatado();
+      
+      console.log('Valor total calculado:', this.valorTotal);
+      console.log('Número de despesas filtradas:', this.despesasFiltradas.length);
+    } catch (error) {
+      console.error('Erro ao calcular valor total:', error);
+      this.valorTotal = 0;
+      this.valorTotalFormatado = 'R$ 0,00';
+    }
+  }
+
+  atualizarValorFormatado() {
+    try {
+      if (this.valorTotal === null || this.valorTotal === undefined || isNaN(this.valorTotal)) {
+        this.valorTotalFormatado = 'R$ 0,00';
+        return;
+      }
+      
+      this.valorTotalFormatado = this.valorTotal.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+      
+      console.log('Valor formatado:', this.valorTotalFormatado);
+    } catch (error) {
+      console.error('Erro ao formatar valor:', error);
+      this.valorTotalFormatado = 'R$ 0,00';
+    }
   }
 
   formatarValor(valor: number): string {
-    return valor.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
+    if (valor === null || valor === undefined || isNaN(valor)) {
+      console.log('Valor inválido para formatação:', valor);
+      return 'R$ 0,00';
+    }
+    
+    try {
+      const valorFormatado = valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+      console.log('Valor formatado:', valorFormatado);
+      return valorFormatado;
+    } catch (error) {
+      console.error('Erro ao formatar valor:', error);
+      return 'R$ 0,00';
+    }
   }
 
   abrirModal(despesa?: any) {
@@ -1025,5 +1115,12 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       console.error('Erro ao copiar despesa:', error);
       this.mostrarMensagemCopiado('Erro ao copiar despesa');
     }
+  }
+
+  // Nova função para limpar filtros de data
+  limparFiltrosData() {
+    this.dataInicial = '';
+    this.dataFinal = '';
+    this.aplicarFiltro();
   }
 }

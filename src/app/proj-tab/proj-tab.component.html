@@ -1,0 +1,86 @@
+<div class="proj-tab-container">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Carregando projetos...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button class="retry-button" (click)="carregarProjetos()">
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Lista de Projetos -->
+  <div *ngIf="!loading && !error" class="projetos-container">
+    <div class="projetos-lista">
+      <div 
+        *ngFor="let projeto of projetosOrdenados; let i = index" 
+        class="projeto-item"
+        [class.com-dependencia]="projeto.dep"
+        [class.tem-dependentes]="temDependentes(projeto)"
+      >
+        <!-- Seta para dependência (se houver) -->
+        <div *ngIf="projeto.dep" class="seta-dependencia">
+          ➜
+        </div>
+
+        <!-- Card do Projeto -->
+        <div class="projeto-card">
+          <div class="projeto-header">
+            <h3 class="projeto-nome">{{ projeto.nome }}</h3>
+            <div 
+              class="projeto-status" 
+              [style.background-color]="getStatusColor(projeto.status)"
+            >
+              {{ formatarStatus(projeto.status) }}
+            </div>
+          </div>
+
+          <div class="projeto-content">
+            <p class="projeto-descricao" *ngIf="projeto.descricao">
+              {{ projeto.descricao }}
+            </p>
+            
+            <div class="projeto-info">
+              <div class="info-item" *ngIf="projeto.data">
+                <span class="icon">📅</span>
+                <span>Início: {{ projeto.data | date:'dd/MM/yyyy' }}</span>
+              </div>
+              
+              <div class="info-item" *ngIf="projeto.fim">
+                <span class="icon">📅</span>
+                <span>Fim: {{ projeto.fim | date:'dd/MM/yyyy' }}</span>
+              </div>
+              
+              <div class="info-item" *ngIf="projeto.prioridade">
+                <span class="icon">🚩</span>
+                <span>Prioridade: {{ projeto.prioridade }}</span>
+              </div>
+            </div>
+
+            <!-- Indicador de dependência -->
+            <div class="dependencia-info" *ngIf="projeto.dep">
+              <span class="icon">🔗</span>
+              <span>Depende de: {{ getProjetoDependencia(projeto)?.nome || 'Projeto não encontrado' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seta para dependentes (se houver) -->
+        <div *ngIf="temDependentes(projeto)" class="seta-dependentes">
+          ➜
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensagem quando não há projetos -->
+    <div *ngIf="projetosOrdenados.length === 0" class="sem-projetos">
+      <div class="empty-icon">📁</div>
+      <p>Nenhum projeto encontrado</p>
+    </div>
+  </div>
+</div>

@@ -536,3 +536,26 @@ ion-header ion-button {
 ion-header ion-button:hover {
   --background: rgba(0, 0, 0, 0.1);
 }
+
+// Estilo para o botão no header
+ion-toolbar ion-buttons[slot="end"] ion-button {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  
+  @media (max-width: 768px) {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    font-size: 12px;
+  }
+}
+
+// Responsividade para o botão
+@media (max-width: 480px) {
+  ion-toolbar ion-buttons[slot="end"] ion-button {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    font-size: 11px;
+  }
+}

@@ -23,12 +23,47 @@
   <div class="recent-section">
     <div class="header-actions">
       <div class="title-section">
-        <h2>Lista de Despesas</h2>
+        <h2>Lista de Despesas </h2>
         <div class="valor-total">
           <span class="total-label">Total:</span>
-          <span class="total-valor">{{ formatarValor(valorTotal) }}</span>
+          <span class="total-valor">{{ valorTotalFormatado }}</span>
         </div>
       </div>
+      
+      <!-- Filtros de Data -->
+      <div class="filtros-data">
+        <div class="data-filtros">
+          <ion-input
+            label="Data Inicial"
+            [(ngModel)]="dataInicial"
+            name="dataInicial"
+            type="date"
+            placeholder="Data inicial"
+            (ionChange)="aplicarFiltro()"
+            class="data-input"
+          ></ion-input>
+          
+          <ion-input
+            label="Data Final"
+            [(ngModel)]="dataFinal"
+            name="dataFinal"
+            type="date"
+            placeholder="Data final"
+            (ionChange)="aplicarFiltro()"
+            class="data-input"
+          ></ion-input>
+          
+          <ion-button
+            (click)="limparFiltrosData()"
+            color="medium"
+            size="small"
+            aria-label="Limpar filtros de data"
+            class="limpar-filtros mobile-button">
+            Limpar
+          </ion-button>
+        </div>
+      </div>
+      
       <div class="button-group">
         <ion-button
           (click)="filtrarDespesasMesAtual()"
@@ -62,12 +97,14 @@
     </div>
 
     <!-- Indicador de filtros ativos -->
-    <div *ngIf="mostrarApenasMesAtual || mostrarApenasProximoMes || mostrarApenasNaoPagas" class="filtros-ativos">
+    <div *ngIf="mostrarApenasMesAtual || mostrarApenasProximoMes || mostrarApenasNaoPagas || dataInicial || dataFinal" class="filtros-ativos">
       <p>Filtros ativos:</p>
       <div class="filtros-tags">
         <span *ngIf="mostrarApenasMesAtual" class="tag-filtro">{{ nomeMesAtual }}</span>
         <span *ngIf="mostrarApenasProximoMes" class="tag-filtro">{{ nomeProximoMes }}</span>
         <span *ngIf="mostrarApenasNaoPagas" class="tag-filtro">Não Pagas</span>
+        <span *ngIf="dataInicial" class="tag-filtro">De: {{ dataInicial | date:'dd/MM/yyyy' }}</span>
+        <span *ngIf="dataFinal" class="tag-filtro">Até: {{ dataFinal | date:'dd/MM/yyyy' }}</span>
       </div>
     </div>
 
@@ -133,28 +170,19 @@
     </ion-list>
 
     <div *ngIf="!loading && despesasFiltradas.length === 0" class="no-data">
-      <p *ngIf="mostrarApenasMesAtual && !mostrarApenasProximoMes && !mostrarApenasNaoPagas">
+      <p *ngIf="mostrarApenasMesAtual && !mostrarApenasProximoMes && !mostrarApenasNaoPagas && !dataInicial && !dataFinal">
         Nenhuma despesa encontrada para {{ nomeMesAtual }}.
       </p>
-      <p *ngIf="mostrarApenasProximoMes && !mostrarApenasMesAtual && !mostrarApenasNaoPagas">
+      <p *ngIf="mostrarApenasProximoMes && !mostrarApenasMesAtual && !mostrarApenasNaoPagas && !dataInicial && !dataFinal">
         Nenhuma despesa encontrada para {{ nomeProximoMes }}.
       </p>
-      <p *ngIf="mostrarApenasNaoPagas && !mostrarApenasMesAtual && !mostrarApenasProximoMes">
+      <p *ngIf="mostrarApenasNaoPagas && !mostrarApenasMesAtual && !mostrarApenasProximoMes && !dataInicial && !dataFinal">
         Nenhuma despesa não quitada encontrada.
       </p>
-      <p *ngIf="mostrarApenasMesAtual && mostrarApenasNaoPagas && !mostrarApenasProximoMes">
-        Nenhuma despesa não quitada encontrada para {{ nomeMesAtual }}.
+      <p *ngIf="dataInicial || dataFinal">
+        Nenhuma despesa encontrada para o período selecionado.
       </p>
-      <p *ngIf="mostrarApenasProximoMes && mostrarApenasNaoPagas && !mostrarApenasMesAtual">
-        Nenhuma despesa não quitada encontrada para {{ nomeProximoMes }}.
-      </p>
-      <p *ngIf="mostrarApenasMesAtual && mostrarApenasProximoMes && !mostrarApenasNaoPagas">
-        Nenhuma despesa encontrada para {{ nomeMesAtual }} e {{ nomeProximoMes }}.
-      </p>
-      <p *ngIf="mostrarApenasMesAtual && mostrarApenasProximoMes && mostrarApenasNaoPagas">
-        Nenhuma despesa não quitada encontrada para {{ nomeMesAtual }} e {{ nomeProximoMes }}.
-      </p>
-      <p *ngIf="!mostrarApenasNaoPagas && !mostrarApenasMesAtual && !mostrarApenasProximoMes">
+      <p *ngIf="!mostrarApenasNaoPagas && !mostrarApenasMesAtual && !mostrarApenasProximoMes && !dataInicial && !dataFinal">
         Nenhuma despesa encontrada.
       </p>
     </div>

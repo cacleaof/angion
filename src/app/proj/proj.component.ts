@@ -84,6 +84,10 @@ export class ProjComponent implements OnInit, OnDestroy {
     this.router.navigate(['/dashboard']);
   }
 
+  navegarParaProjTab() {
+    this.router.navigate(['/projtab']);
+  }
+
   abrirModal(projeto?: any) {
     if (projeto) {
       this.editingProjeto = projeto;

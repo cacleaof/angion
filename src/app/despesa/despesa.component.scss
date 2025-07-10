@@ -397,14 +397,7 @@
     border-radius: 20px;
     font-weight: bold;
     
-    .total-label {
-      font-size: 0.9em;
-      opacity: 0.9;
-    }
-    
-    .total-valor {
-      font-size: 1.1em;
-    }
+  
   }
 }
 
@@ -787,4 +780,102 @@ ion-item.vencida {
   margin-left: 16px;
   display: inline-block;
   vertical-align: middle;
+}
+
+.filtros-data {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: var(--ion-color-light);
+  border-radius: 8px;
+  
+  .data-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: end;
+    
+    .data-input {
+      flex: 1;
+      min-width: 150px;
+    }
+    
+    .limpar-filtros {
+      flex-shrink: 0;
+      height: 40px;
+    }
+  }
+}
+
+.filtros-ativos {
+  margin: 10px 0;
+  padding: 8px 12px;
+  background-color: var(--ion-color-light);
+  border-radius: 6px;
+  border-left: 4px solid var(--ion-color-primary);
+  
+  p {
+    margin: 0 0 5px 0;
+    font-size: 0.9em;
+    color: var(--ion-color-medium);
+  }
+  
+  .filtros-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    
+    .tag-filtro {
+      background-color: var(--ion-color-primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: 500;
+    }
+  }
+}
+
+// Responsividade para mobile
+@media (max-width: 768px) {
+  .filtros-data {
+    .data-filtros {
+      flex-direction: column;
+      
+      .data-input {
+        width: 100%;
+      }
+      
+      .limpar-filtros {
+        width: 100%;
+      }
+    }
+  }
+  
+  .filtros-ativos {
+    .filtros-tags {
+      flex-direction: column;
+      
+      .tag-filtro {
+        text-align: center;
+      }
+    }
+  }
+}
+
+// Melhorias visuais para os filtros
+.title-section {
+  .valor-total {
+    margin-top: 5px;
+    
+    .total-label {
+      font-weight: 500;
+      color: white;
+    }
+    
+    .total-valor {
+      font-weight: 600;
+      color: white;
+      font-size: 1.1em;
+    }
+  }
 }

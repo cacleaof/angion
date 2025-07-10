@@ -1,0 +1,296 @@
+.proj-tab-container {
+  padding: 16px;
+  min-height: 100vh;
+  background: var(--ion-color-light);
+}
+
+// Loading
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--ion-color-light);
+    border-top: 4px solid var(--ion-color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Error
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  
+  .error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--ion-color-danger);
+    margin-bottom: 16px;
+  }
+  
+  .retry-button {
+    background: var(--ion-color-primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    
+    &:hover {
+      background: var(--ion-color-primary-shade);
+    }
+  }
+}
+
+// Container principal dos projetos
+.projetos-container {
+  width: 100%;
+}
+
+// Lista horizontal de projetos
+.projetos-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+// Item individual do projeto
+.projeto-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  
+  &.com-dependencia {
+    margin-left: 24px; // Espaço para a seta
+  }
+  
+  &.tem-dependentes {
+    margin-right: 24px; // Espaço para a seta
+  }
+}
+
+// Setas de dependência
+.seta-dependencia,
+.seta-dependentes {
+  display: flex;
+  align-items: center;
+  color: var(--ion-color-primary);
+  font-size: 24px;
+  font-weight: bold;
+}
+
+// Card do projeto
+.projeto-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--ion-color-light);
+  min-width: 280px;
+  max-width: 320px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+}
+
+// Header do projeto
+.projeto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 16px 12px 16px;
+  border-bottom: 1px solid var(--ion-color-light);
+  
+  .projeto-nome {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    flex: 1;
+    line-height: 1.3;
+  }
+  
+  .projeto-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    margin-left: 8px;
+  }
+}
+
+// Conteúdo do projeto
+.projeto-content {
+  padding: 12px 16px 16px 16px;
+  
+  .projeto-descricao {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Informações do projeto
+.projeto-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    
+    .icon {
+      font-size: 14px;
+    }
+    
+    span:not(.icon) {
+      flex: 1;
+    }
+  }
+}
+
+// Informação de dependência
+.dependencia-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--ion-color-primary);
+  border-left: 3px solid var(--ion-color-primary);
+  
+  .icon {
+    font-size: 14px;
+  }
+  
+  span:not(.icon) {
+    flex: 1;
+    font-weight: 500;
+  }
+}
+
+// Mensagem quando não há projetos
+.sem-projetos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .projetos-lista {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .projeto-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    
+    &.com-dependencia,
+    &.tem-dependentes {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+  
+  .seta-dependencia,
+  .seta-dependentes {
+    transform: rotate(90deg);
+    font-size: 20px;
+  }
+  
+  .projeto-card {
+    min-width: auto;
+    max-width: none;
+  }
+}
+
+// Animações
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.projeto-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Estados especiais
+.projeto-card {
+  &.projeto-prioritario {
+    border-color: var(--ion-color-warning);
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+  }
+  
+  &.projeto-vencido {
+    border-color: var(--ion-color-danger);
+    box-shadow: 0 2px 8px rgba(235, 68, 90, 0.2);
+  }
+}
