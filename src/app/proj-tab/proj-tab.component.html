@@ -22,6 +22,8 @@
         class="projeto-item"
         [class.com-dependencia]="projeto.dep"
         [class.tem-dependentes]="temDependentes(projeto)"
+        (click)="verTarefasDoProjeto(projeto)"
+        style="cursor: pointer;"
       >
         <!-- Seta para dependência (se houver) -->
         <div *ngIf="projeto.dep" class="seta-dependencia">
@@ -65,7 +67,7 @@
             <!-- Indicador de dependência -->
             <div class="dependencia-info" *ngIf="projeto.dep">
               <span class="icon">🔗</span>
-              <span>Depende de: {{ getProjetoDependencia(projeto)?.nome || 'Projeto não encontrado' }}</span>
+              <span>Projeto Pai: {{ getProjetoDependencia(projeto)?.nome || 'Projeto não encontrado' }}</span>
             </div>
           </div>
         </div>

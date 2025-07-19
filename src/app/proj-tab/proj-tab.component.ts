@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ProjService } from '../services/proj.service';
 import { Proj } from '../model/proj';
 import { firstValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-proj-tab',
@@ -17,7 +18,10 @@ export class ProjTabComponent implements OnInit {
   loading: boolean = false;
   error: string = '';
 
-  constructor(private projService: ProjService) { }
+  constructor(
+    private projService: ProjService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.carregarProjetos();
@@ -39,6 +43,13 @@ export class ProjTabComponent implements OnInit {
       this.error = 'Erro ao carregar projetos';
     } finally {
       this.loading = false;
+    }
+  }
+
+  // Função para navegar para as tarefas do projeto
+  verTarefasDoProjeto(projeto: Proj) {
+    if (projeto.id) {
+      this.router.navigate(['/proj-task-tab', projeto.id]);
     }
   }
 

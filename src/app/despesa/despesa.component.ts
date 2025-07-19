@@ -66,6 +66,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   despesasFiltradas: any[] = [];
   loading: boolean = false;
   showModal: boolean = false;
+  showModalParc: boolean = false;
   editingDespesa: any = null;
   mostrarApenasNaoPagas: boolean = true;
   mostrarApenasMesAtual: boolean = false;
@@ -79,6 +80,9 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   // Novas propriedades para filtros de data
   dataInicial: string = '';
   dataFinal: string = '';
+  
+  // Propriedade para armazenar novas parcelas
+  novasParcelas: any[] = [];
   
   novaDespesa: any = {
     nome: '',
@@ -173,7 +177,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       );
       
       this.despesas = Array.isArray(response) ? response : (response.data || []);
-      console.log('Despesas carregadas:', this.despesas);
+      //console.log('Despesas carregadas:', this.despesas);
       
       // Limpar cache de imagens ao recarregar
       this.clearImageCache();
@@ -198,6 +202,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       
       // Calcular próximo mês
       const proximoMes = new Date(anoAtual, mesAtual + 1, 1);
+      //console.log('Próximo mês:', proximoMes);
       const mesProximo = proximoMes.getMonth();
       const anoProximo = proximoMes.getFullYear();
 
@@ -205,8 +210,9 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       const despesasComParcelas = this.despesas.filter(despesa => 
         despesa.nparc && parseInt(despesa.nparc) > 1
       );
+     //console.log('Despesas com múltiplas parcelas:', despesasComParcelas);
 
-      console.log('Despesas com múltiplas parcelas encontradas:', despesasComParcelas.length);
+    //console.log('Despesas com múltiplas parcelas encontradas:', despesasComParcelas.length);
 
       // 2. Filtrar despesas com vencimento no mês atual
       const despesasMesAtual = despesasComParcelas.filter(despesa => {
@@ -217,29 +223,33 @@ export class DespesaComponent implements OnInit, AfterViewInit {
                dataVencimento.getFullYear() === anoAtual;
       });
 
-      console.log('Despesas do mês atual com múltiplas parcelas:', despesasMesAtual.length);
+      //console.log('Despesas do mês atual com múltiplas parcelas:', despesasMesAtual.length);
+      //console.log('Despesas do mês atual com múltiplas parcelas:', despesasMesAtual);
 
       // 3. Para cada despesa do mês atual, verificar se já existe a próxima parcela
-      const novasParcelas: any[] = [];
+      this.novasParcelas = []; // Limpar array de novas parcelas
 
       for (const despesa of despesasMesAtual) {
+        //console.log('nome da despesa: '+despesa.nome+' '+despesa.venc);
         const nomeDespesa = despesa.nome;
         const parcAtual = parseInt(despesa.parc) || 1;
         const nparcTotal = parseInt(despesa.nparc) || 1;
         
         // Verificar se já existe a próxima parcela no próximo mês
-        const existeProximaParcela = this.despesas.some(d => {
-          if (d.nome !== nomeDespesa) return false;
-          if (!d.venc) return false;
-          
-          const dataVencimento = new Date(d.venc);
-          return dataVencimento.getMonth() === mesProximo && 
-                 dataVencimento.getFullYear() === anoProximo;
+        const existeProximaParcela = despesasComParcelas.some(d => {
+         // if(d.parc == (parcAtual) && d.nome == nomeDespesa){
+         // console.log('nome: '+d.nome+' id'+d.id+' /'+d.parc+' Atual: '+nomeDespesa+' id'+despesa.id+' /'+(parcAtual+1));
+         // }
+          // Verificar se existe um registro com o mesmo nome, mesmo nparc e mesmo parc
+          return d.nome.trim() == nomeDespesa.trim() && 
+                 d.nparc == nparcTotal && 
+                 d.parc == (parcAtual+1);
         });
-
         // Só criar próxima parcela se não existir e se ainda não chegou ao total
-        if (!existeProximaParcela && parcAtual < nparcTotal) {
+        if (!existeProximaParcela && nparcTotal >= parcAtual) {
+         this.showModalParc = true;
           // Criar próxima parcela
+          //console.log(`Incluir:`+existeProximaParcela+'nome:'+nomeDespesa+' id:'+despesa.id+' '+nparcTotal+' '+(parcAtual+1));
           const proximaParcela = {
             nome: despesa.nome,
             descricao: despesa.descricao || '',
@@ -254,19 +264,18 @@ export class DespesaComponent implements OnInit, AfterViewInit {
             pix: despesa.pix || '' // Adicionar campo pix
           };
 
-          novasParcelas.push(proximaParcela);
-          console.log(`Nova parcela criada: ${despesa.nome} - Parcela ${proximaParcela.parc} de ${proximaParcela.nparc}`);
+          this.novasParcelas.push(proximaParcela);
+          //console.log(`Nova parcela criada: ${despesa.nome} - Parcela ${proximaParcela.parc} de ${proximaParcela.nparc}`);
         }
       }
-
       // 4. Salvar as novas parcelas no backend
-      if (novasParcelas.length > 0) {
-        console.log(`Criando ${novasParcelas.length} novas parcelas...`);
+      if (this.novasParcelas.length > 0) {
+        //console.log(`Criando ${this.novasParcelas.length} novas parcelas...`);
         
-        for (const novaParcela of novasParcelas) {
+        for (const novaParcela of this.novasParcelas) {
           try {
             await firstValueFrom(this.http.post(`${this.apiUrl}/despesa`, novaParcela));
-            console.log('Parcela criada com sucesso:', novaParcela.nome, `(Parcela ${novaParcela.parc}/${novaParcela.nparc})`);
+           // console.log('Parcela criada com sucesso:', novaParcela.nome, `(Parcela ${novaParcela.parc}/${novaParcela.nparc})`);
           } catch (error) {
             console.error('Erro ao criar parcela:', novaParcela.nome, error);
           }
@@ -283,9 +292,9 @@ export class DespesaComponent implements OnInit, AfterViewInit {
           return new Date(a.venc).getTime() - new Date(b.venc).getTime();
         });
 
-        console.log(`Processo concluído. ${novasParcelas.length} parcelas criadas.`);
+        //console.log(`Processo concluído. ${this.novasParcelas.length} parcelas criadas.`);
       } else {
-        console.log('Nenhuma nova parcela foi criada.');
+        //console.log('Nenhuma nova parcela foi criada.');
       }
 
     } catch (error) {
@@ -305,6 +314,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     // Formatar para YYYY-MM-DD
     return proximoMes.toISOString().split('T')[0];
   }
+   confParc(){}
 
   filtrarDespesasNaoPagas() {
     this.mostrarApenasNaoPagas = !this.mostrarApenasNaoPagas;
@@ -473,8 +483,8 @@ export class DespesaComponent implements OnInit, AfterViewInit {
 
   calcularValorTotal() {
     try {
-      console.log('Calculando valor total...');
-      console.log('Despesas filtradas:', this.despesasFiltradas);
+      //console.log('Calculando valor total...');
+      //console.log('Despesas filtradas:', this.despesasFiltradas);
       
       this.valorTotal = this.despesasFiltradas.reduce((total, despesa) => {
         // Garantir que o valor seja um número válido
@@ -491,15 +501,15 @@ export class DespesaComponent implements OnInit, AfterViewInit {
           }
         }
         
-        console.log(`Despesa: ${despesa.nome}, Valor original: ${despesa.valor}, Valor processado: ${valor}`);
+        //console.log(`Despesa: ${despesa.nome}, Valor original: ${despesa.valor}, Valor processado: ${valor}`);
         return total + valor;
       }, 0);
       
       // Atualizar o valor formatado
       this.atualizarValorFormatado();
       
-      console.log('Valor total calculado:', this.valorTotal);
-      console.log('Número de despesas filtradas:', this.despesasFiltradas.length);
+      //console.log('Valor total calculado:', this.valorTotal);
+      //console.log('Número de despesas filtradas:', this.despesasFiltradas.length);
     } catch (error) {
       console.error('Erro ao calcular valor total:', error);
       this.valorTotal = 0;
@@ -519,7 +529,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         currency: 'BRL'
       });
       
-      console.log('Valor formatado:', this.valorTotalFormatado);
+      //console.log('Valor formatado:', this.valorTotalFormatado);
     } catch (error) {
       console.error('Erro ao formatar valor:', error);
       this.valorTotalFormatado = 'R$ 0,00';
@@ -528,7 +538,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
 
   formatarValor(valor: number): string {
     if (valor === null || valor === undefined || isNaN(valor)) {
-      console.log('Valor inválido para formatação:', valor);
+      //console.log('Valor inválido para formatação:', valor);
       return 'R$ 0,00';
     }
     
@@ -537,7 +547,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         style: 'currency',
         currency: 'BRL'
       });
-      console.log('Valor formatado:', valorFormatado);
+      //console.log('Valor formatado:', valorFormatado);
       return valorFormatado;
     } catch (error) {
       console.error('Erro ao formatar valor:', error);
@@ -573,7 +583,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
 
       // Configurar preview da imagem se existir
       if (despesa.imagem && despesa.imagem !== '') {
-        console.log('Imagem encontrada na despesa:', despesa.imagem);
+        //console.log('Imagem encontrada na despesa:', despesa.imagem);
         
         // Construir URL completa da imagem
         let imageUrl = '';
@@ -587,11 +597,11 @@ export class DespesaComponent implements OnInit, AfterViewInit {
           imageUrl = `http://localhost:3000/${despesa.imagem}`;
         }
         
-        console.log('URL da imagem construída:', imageUrl);
+        //console.log('URL da imagem construída:', imageUrl);
         this.boletoImagePreview = imageUrl;
         this.boletoFile = null; // Não temos o arquivo original, apenas a URL
       } else {
-        console.log('Nenhuma imagem encontrada na despesa');
+        //console.log('Nenhuma imagem encontrada na despesa');
         this.boletoImagePreview = null;
         this.boletoFile = null;
       }
@@ -634,6 +644,10 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     this.uploadError = null;
     this.uploading = false;
     this.uploadProgress = 0;
+  }
+
+  fecharModalParc() {
+    this.showModalParc = false;
   }
 
   // Função auxiliar para formatar data
@@ -740,14 +754,14 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         }
       });
 
-      console.log('Dados sendo enviados:', dadosParaSalvar);
+      //console.log('Dados sendo enviados:', dadosParaSalvar);
 
       if (this.editingDespesa) {
         await firstValueFrom(this.http.put(`${this.apiUrl}/despesa/${this.editingDespesa.id}`, dadosParaSalvar));
-        console.log('Despesa atualizada:', dadosParaSalvar);
+        //console.log('Despesa atualizada:', dadosParaSalvar);
       } else {
         await firstValueFrom(this.http.post(`${this.apiUrl}/despesa`, dadosParaSalvar));
-        console.log('Despesa criada:', dadosParaSalvar);
+        //console.log('Despesa criada:', dadosParaSalvar);
       }
 
       this.fecharModal();
@@ -788,7 +802,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       await firstValueFrom(this.http.put(`${this.apiUrl}/despesa/${despesa.id}`, dadosParaEnviar));
 
       despesa.pago = novoStatus;
-      console.log('Status de pagamento alterado:', despesa);
+      //console.log('Status de pagamento alterado:', despesa);
       alert(despesa.pago ? 'Despesa marcada como paga!' : 'Despesa marcada como não paga!');
     } catch (error) {
       console.error('Erro ao alterar status de pagamento:', error);
@@ -797,8 +811,8 @@ export class DespesaComponent implements OnInit, AfterViewInit {
   }
 
   onDescricaoInput(event: any) {
-    console.log('Valor da descrição:', event.target.value);
-    console.log('Tipo do valor:', typeof event.target.value);
+    //console.log('Valor da descrição:', event.target.value);
+    //console.log('Tipo do valor:', typeof event.target.value);
   }
 
   // Adicione este método
@@ -840,7 +854,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       if (item.type.indexOf('image') !== -1) {
         const file = item.getAsFile();
         if (file) {
-          console.log('Imagem colada:', file);
+          //console.log('Imagem colada:', file);
           this.processImageFile(file);
           break;
         }
@@ -866,7 +880,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     reader.onload = (e) => {
       this.boletoImagePreview = e.target?.result as string;
       this.boletoFile = file;
-      console.log('Preview da imagem criado');
+      //console.log('Preview da imagem criado');
     };
     reader.readAsDataURL(file);
   }
@@ -879,7 +893,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     
     // Se estiver editando, marcar que a imagem foi removida
     if (this.editingDespesa) {
-      console.log('Imagem removida da despesa em edição');
+      //console.log('Imagem removida da despesa em edição');
     }
   }
 
@@ -971,14 +985,14 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         valorpg: this.valorPago // Valor pago
       };
 
-      console.log('Dados do pagamento:', dadosParaEnviar);
+      //console.log('Dados do pagamento:', dadosParaEnviar);
 
       await firstValueFrom(
         this.http.put(`${this.apiUrl}/despesa/${this.despesaPagamento.id}`, dadosParaEnviar)
       );
 
-      console.log('Despesa marcada como paga:', this.despesaPagamento.nome);
-      alert('Despesa marcada como paga com sucesso!');
+      //console.log('Despesa marcada como paga:', this.despesaPagamento.nome);
+      //alert('Despesa marcada como paga com sucesso!');
 
       this.fecharModalPagamento();
       this.carregarDespesas();
@@ -1094,7 +1108,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         codbar: despesa.codbar || '',
         pix: despesa.pix || ''
       };
-      console.log('Despesa copiada:', despesaCopiada);
+      //console.log('Despesa copiada:', despesaCopiada);
 
       // Salvar a despesa copiada
       const response: any = await firstValueFrom(
@@ -1102,7 +1116,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       );
 
       if (response && response.id) {
-        console.log('Despesa copiada com sucesso:', response);
+        //console.log('Despesa copiada com sucesso:', response);
         this.mostrarMensagemCopiado('Despesa copiada com sucesso!');
         
         // Recarregar a lista de despesas

@@ -1,0 +1,183 @@
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h2 {
+    margin: 0;
+    color: var(--ion-color-primary);
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+.bulk-actions {
+  background: var(--ion-color-light);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+
+  .bulk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .selected-count {
+      font-weight: bold;
+      color: var(--ion-color-primary);
+    }
+  }
+
+  .bulk-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--ion-color-medium);
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: var(--ion-color-medium);
+
+  p {
+    font-size: 1.1rem;
+  }
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-light);
+
+  &.selected {
+    --background: var(--ion-color-primary-tint);
+    border-color: var(--ion-color-primary);
+  }
+
+  &.tarefa-concluida {
+    --background: var(--ion-color-success-tint);
+    opacity: 0.8;
+  }
+
+  ion-label {
+    h2 {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .status-badge {
+        font-size: 0.7rem;
+      }
+    }
+
+    p {
+      margin: 0.25rem 0;
+      color: var(--ion-color-medium);
+
+      &.prioridade {
+        font-weight: bold;
+      }
+
+      &.status {
+        font-style: italic;
+      }
+    }
+
+    &.concluida {
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+  }
+
+  .action-button {
+    --padding-start: 0.5rem;
+    --padding-end: 0.5rem;
+    font-size: 0.8rem;
+  }
+}
+
+.selection-checkbox {
+  margin-right: 0.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .form-select {
+    flex: 1;
+  }
+}
+
+.required-field {
+  --border-color: var(--ion-color-danger);
+}
+
+.obs-modal-content {
+  h3 {
+    margin-bottom: 1rem;
+    color: var(--ion-color-primary);
+  }
+
+  .obs-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+
+    .action-buttons {
+      justify-content: center;
+    }
+  }
+
+  .bulk-actions {
+    .bulk-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .bulk-buttons {
+      justify-content: center;
+    }
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .obs-modal-actions {
+    flex-direction: column;
+  }
+}

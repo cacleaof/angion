@@ -48,12 +48,17 @@ export const routes: Routes = [
     loadComponent: () => import('./nproj/nproj.component').then(m => m.NprojComponent),
     canActivate: [AuthGuard]
   },
-    {
+  {
     path: 'projtab',
     loadComponent: () => import('./proj-tab/proj-tab.component').then(m => m.ProjTabComponent),
     canActivate: [AuthGuard]
   },
-    {
+  {
+    path: 'proj-task-tab/:projetoId',
+    loadComponent: () => import('./proj-task-tab/proj-task-tab.component').then(m => m.ProjTaskTabComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'lib',
     loadComponent: () => import('./lib/lib.component').then(m => m.LibComponent),
     canActivate: [AuthGuard]
