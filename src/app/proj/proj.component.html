@@ -6,7 +6,28 @@
       </ion-button>
     </ion-buttons>
     <ion-title>
-      Projetos
+      <div class="title-content">
+        <span>Projetos</span>
+        <div class="search-container">
+          <ion-input
+            name="proc"
+            placeholder="Filtrar Dados"
+            [(ngModel)]="termoBusca"
+            (ionInput)="filtrarPorBusca($event)"
+            clearInput="true"
+            class="search-input-inline"
+          ></ion-input>
+          <ion-button 
+            *ngIf="termoBusca && termoBusca.trim() !== ''"
+            fill="clear" 
+            (click)="limparBusca()" 
+            color="medium" 
+            size="small"
+            aria-label="Limpar busca">
+            Limpar
+          </ion-button>
+        </div>
+      </div>
     </ion-title>
     <ion-buttons slot="end">
       <ion-button 
@@ -24,6 +45,9 @@
   <div class="recent-section">
     <div class="header-actions">
       <h2>Lista de Projetos</h2>
+      <div class="results-info" *ngIf="termoBusca && termoBusca.trim() !== ''">
+        <p>{{ projetosFiltrados.length }} projeto(s) encontrado(s) para "{{ termoBusca }}"</p>
+      </div>
       <div class="button-group">
         <ion-button
           (click)="abrirModal()"
@@ -51,9 +75,9 @@
     </div>
 
     <!-- Lista com Ionic corrigida -->
-    <ion-list *ngIf="!loading && projetos.length > 0">
+    <ion-list *ngIf="!loading && projetosFiltrados.length > 0">
       <ion-item 
-        *ngFor="let projeto of projetos; let i = index" 
+        *ngFor="let projeto of projetosFiltrados; let i = index" 
         (click)="verDetalhesProjeto(projeto)"
         [class.projeto-concluido]="projeto.status === 'CONCLUÍDO' || projeto.status === 'CONCLUIDO'">
         
@@ -134,8 +158,13 @@
       </ion-item>
     </ion-list>
 
-    <div *ngIf="!loading && projetos.length === 0" class="no-data">
-      <p>Nenhum projeto encontrado.</p>
+    <div *ngIf="!loading && projetosFiltrados.length === 0" class="no-data">
+      <p *ngIf="termoBusca && termoBusca.trim() !== ''">
+        Nenhum projeto encontrado para "{{ termoBusca }}".
+      </p>
+      <p *ngIf="!termoBusca || termoBusca.trim() === ''">
+        Nenhum projeto encontrado.
+      </p>
     </div>
   </div>
 </ion-content>

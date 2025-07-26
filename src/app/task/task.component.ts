@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -13,16 +13,18 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: 'task.component.html',
   styleUrls: ['task.component.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, CommonModule, FormsModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon, CommonModule, FormsModule],
 })
 export class TaskComponent implements OnInit, OnDestroy {
   tarefas: any[] = [];
+  tarefasFiltradas: any[] = []; // Nova propriedade para tarefas filtradas
   projetos: any[] = [];
   loading: boolean = false;
   showModal: boolean = false;
   editingTarefa: any = null;
   modoEdicao: boolean = false;
   tarefasSelecionadas: Set<string> = new Set();
+  termoBusca: string = ''; // Nova propriedade para o termo de busca
 
   novaTarefa: any = {
     nome: '',
@@ -33,8 +35,16 @@ export class TaskComponent implements OnInit, OnDestroy {
     data: '',
     status: 'PENDENTE',
     prioridade: 2,
-    obs: ''
+    obs: '',
+    audio: '' // Novo campo para armazenar o áudio
   };
+
+  // Propriedades para gravação de voz
+  mediaRecorder: MediaRecorder | null = null;
+  audioChunks: Blob[] = [];
+  isRecording: boolean = false;
+  audioUrl: string | null = null;
+  audioFile: File | null = null;
 
   // Adicionar propriedades para o modal de observações
   showObsModal: boolean = false;
@@ -79,6 +89,7 @@ export class TaskComponent implements OnInit, OnDestroy {
       const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/tasks`));
       this.tarefas = Array.isArray(response) ? response : [];
       console.log('Tarefas carregadas:', this.tarefas);
+      this.aplicarFiltro(); // Aplicar filtro após carregar tarefas
     } catch (error) {
       console.error('Erro ao carregar tarefas:', error);
       alert('Erro ao carregar tarefas');
@@ -95,6 +106,117 @@ export class TaskComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Erro ao carregar projetos:', error);
     }
+  }
+
+  // Método para filtrar por busca
+  filtrarPorBusca(event: any) {
+    this.termoBusca = event.target.value || '';
+    this.aplicarFiltro();
+  }
+
+  limparBusca() {
+    this.termoBusca = '';
+    this.aplicarFiltro();
+  }
+
+  // Método para aplicar filtro
+  aplicarFiltro() {
+    let tarefasFiltradas = this.tarefas;
+
+    // Aplicar filtro de busca
+    if (this.termoBusca && this.termoBusca.trim() !== '') {
+      const termo = this.termoBusca.toLowerCase().trim();
+      tarefasFiltradas = tarefasFiltradas.filter(tarefa => {
+        return this.tarefaCorrespondeBusca(tarefa, termo);
+      });
+    }
+
+    // Ordenar por data (mais recentes primeiro) e depois por prioridade
+    tarefasFiltradas = tarefasFiltradas.sort((a, b) => {
+      // Se uma tarefa não tem data, coloca no final
+      if (!a.data && !b.data) return 0;
+      if (!a.data) return 1;
+      if (!b.data) return -1;
+      
+      // Comparar datas de vencimento
+      const dataA = new Date(a.data);
+      const dataB = new Date(b.data);
+      
+      // Ordem decrescente (mais recentes primeiro)
+      const comparacaoData = dataB.getTime() - dataA.getTime();
+      
+      // Se as datas são iguais, ordenar por prioridade (mais alta primeiro)
+      if (comparacaoData === 0) {
+        const prioridadeA = a.prioridade || 2;
+        const prioridadeB = b.prioridade || 2;
+        return prioridadeB - prioridadeA;
+      }
+      
+      return comparacaoData;
+    });
+
+    this.tarefasFiltradas = tarefasFiltradas;
+  }
+
+  // Método para verificar se uma tarefa corresponde ao termo de busca
+  private tarefaCorrespondeBusca(tarefa: any, termo: string): boolean {
+    if (!termo || termo.trim() === '') {
+      return true; // Se não há termo de busca, incluir todas
+    }
+
+    const termoLower = termo.toLowerCase().trim();
+    
+    // Buscar no nome
+    if (tarefa.nome && tarefa.nome.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+    
+    // Buscar na descrição
+    if (tarefa.descricao && tarefa.descricao.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+    
+    // Buscar na observação
+    if (tarefa.obs && tarefa.obs.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+    
+    // Buscar no status
+    if (tarefa.status && tarefa.status.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+    
+    // Buscar no tipo
+    if (tarefa.tipo && tarefa.tipo.toLowerCase().includes(termoLower)) {
+      return true;
+    }
+    
+    // Buscar na prioridade (por nome)
+    if (tarefa.prioridade) {
+      const prioridadeNome = this.getPrioridadeNome(tarefa.prioridade).toLowerCase();
+      if (prioridadeNome.includes(termoLower)) {
+        return true;
+      }
+    }
+    
+    // Buscar na data
+    if (tarefa.data) {
+      const dataTarefa = new Date(tarefa.data);
+      const dataFormatada = dataTarefa.toLocaleDateString('pt-BR');
+      if (dataFormatada.includes(termoLower)) {
+        return true;
+      }
+    }
+    
+    // Buscar no projeto
+    if (tarefa.proj) {
+      const projetoNome = this.getProjetoNome(tarefa.proj).toLowerCase();
+      if (projetoNome.includes(termoLower)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   toggleModoEdicao() {
@@ -117,10 +239,10 @@ export class TaskComponent implements OnInit, OnDestroy {
   }
 
   selecionarTodas() {
-    if (this.tarefasSelecionadas.size === this.tarefas.length) {
+    if (this.tarefasSelecionadas.size === this.tarefasFiltradas.length) {
       this.tarefasSelecionadas.clear();
     } else {
-      this.tarefas.forEach(tarefa => this.tarefasSelecionadas.add(tarefa.id));
+      this.tarefasFiltradas.forEach(tarefa => this.tarefasSelecionadas.add(tarefa.id));
     }
   }
 
@@ -136,12 +258,21 @@ export class TaskComponent implements OnInit, OnDestroy {
       );
 
       try {
-        await Promise.all(promises);
-        console.log('Tarefas deletadas com sucesso');
-        this.tarefasSelecionadas.clear();
-        this.modoEdicao = false;
-        this.carregarTarefas();
-        alert('Tarefas deletadas com sucesso!');
+              await Promise.all(promises);
+      console.log('Tarefas deletadas com sucesso');
+      
+      // Remover tarefas da lista original
+      Array.from(this.tarefasSelecionadas).forEach(id => {
+        const index = this.tarefas.findIndex(t => t.id === id);
+        if (index !== -1) {
+          this.tarefas.splice(index, 1);
+        }
+      });
+      
+      this.tarefasSelecionadas.clear();
+      this.modoEdicao = false;
+      this.aplicarFiltro(); // Aplicar filtro para atualizar a lista filtrada
+      alert('Tarefas deletadas com sucesso!');
       } catch (error) {
         console.error('Erro ao deletar tarefas:', error);
         alert('Erro ao deletar tarefas');
@@ -169,9 +300,18 @@ export class TaskComponent implements OnInit, OnDestroy {
 
       await Promise.all(promises);
       console.log('Tarefas marcadas como concluídas:', this.tarefasSelecionadas);
+      
+      // Atualizar status na lista original
+      Array.from(this.tarefasSelecionadas).forEach(id => {
+        const index = this.tarefas.findIndex(t => t.id === id);
+        if (index !== -1) {
+          this.tarefas[index].status = 'CONCLUÍDA';
+        }
+      });
+      
       this.tarefasSelecionadas.clear();
       this.modoEdicao = false;
-      this.carregarTarefas();
+      this.aplicarFiltro(); // Aplicar filtro para atualizar a lista filtrada
       alert('Tarefas marcadas como concluídas!');
     } catch (error) {
       console.error('Erro ao marcar tarefas:', error);
@@ -189,6 +329,14 @@ export class TaskComponent implements OnInit, OnDestroy {
 
       tarefa.status = novoStatus;
       console.log('Status da tarefa alterado:', tarefa);
+      
+      // Atualizar também na lista original
+      const index = this.tarefas.findIndex(t => t.id === tarefa.id);
+      if (index !== -1) {
+        this.tarefas[index].status = novoStatus;
+      }
+      
+      this.aplicarFiltro(); // Reaplicar filtro após alteração
     } catch (error) {
       console.error('Erro ao alterar status da tarefa:', error);
       alert('Erro ao alterar status da tarefa');
@@ -217,8 +365,14 @@ export class TaskComponent implements OnInit, OnDestroy {
         data: dataFormatada, // Usar a data formatada
         status: tarefa.status || 'PENDENTE',
         prioridade: tarefa.prioridade || 2,
-        obs: tarefa.obs || ''
+        obs: tarefa.obs || '',
+        audio: tarefa.audio || ''
       };
+
+      // Configurar áudio se existir
+      if (tarefa.audio && tarefa.audio !== '') {
+        this.audioUrl = `${this.apiUrl}/audio/${tarefa.audio}`;
+      }
     } else {
       this.editingTarefa = null;
       this.novaTarefa = {
@@ -230,8 +384,12 @@ export class TaskComponent implements OnInit, OnDestroy {
         data: '',
         status: 'PENDENTE',
         prioridade: 2,
-        obs: ''
+        obs: '',
+        audio: ''
       };
+      
+      // Limpar dados de áudio
+      this.removerAudio();
     }
     this.showModal = true;
   }
@@ -239,6 +397,9 @@ export class TaskComponent implements OnInit, OnDestroy {
   fecharModal() {
     this.showModal = false;
     this.editingTarefa = null;
+    
+    // Limpar dados de áudio
+    this.removerAudio();
   }
 
   async salvarTarefa() {
@@ -248,18 +409,38 @@ export class TaskComponent implements OnInit, OnDestroy {
     }
 
     try {
+      // Fazer upload do áudio se existir
+      let audioPath = null;
+      if (this.audioFile) {
+        audioPath = await this.uploadAudio();
+        if (audioPath) {
+          this.novaTarefa.audio = audioPath;
+        }
+      }
+
       if (this.editingTarefa) {
         // Atualizar tarefa existente
-        await firstValueFrom(this.http.put(`${this.apiUrl}/task/${this.editingTarefa.id}`, this.novaTarefa));
+        const response = await firstValueFrom(this.http.put(`${this.apiUrl}/task/${this.editingTarefa.id}`, this.novaTarefa));
         console.log('Tarefa atualizada:', this.novaTarefa);
+        
+        // Atualizar na lista original
+        const index = this.tarefas.findIndex(t => t.id === this.editingTarefa.id);
+        if (index !== -1) {
+          this.tarefas[index] = { ...this.tarefas[index], ...this.novaTarefa };
+        }
       } else {
         // Criar nova tarefa
-        await firstValueFrom(this.http.post(`${this.apiUrl}/task/`, this.novaTarefa));
+        const response: any = await firstValueFrom(this.http.post(`${this.apiUrl}/task/`, this.novaTarefa));
         console.log('Tarefa criada:', this.novaTarefa);
+        
+        // Adicionar à lista original se a resposta contém o ID
+        if (response && response.id) {
+          this.tarefas.push({ ...this.novaTarefa, id: response.id });
+        }
       }
 
       this.fecharModal();
-      this.carregarTarefas();
+      this.aplicarFiltro(); // Aplicar filtro para atualizar a lista filtrada
       alert(this.editingTarefa ? 'Tarefa atualizada com sucesso!' : 'Tarefa criada com sucesso!');
     } catch (error) {
       console.error('Erro ao salvar tarefa:', error);
@@ -272,7 +453,14 @@ export class TaskComponent implements OnInit, OnDestroy {
       try {
         await firstValueFrom(this.http.delete(`${this.apiUrl}/task/${tarefa.id}`));
         console.log('Tarefa deletada:', tarefa);
-        this.carregarTarefas();
+        
+        // Remover da lista original
+        const index = this.tarefas.findIndex(t => t.id === tarefa.id);
+        if (index !== -1) {
+          this.tarefas.splice(index, 1);
+        }
+        
+        this.aplicarFiltro(); // Aplicar filtro para atualizar a lista filtrada
         alert('Tarefa deletada com sucesso!');
       } catch (error) {
         console.error('Erro ao deletar tarefa:', error);
@@ -291,7 +479,15 @@ export class TaskComponent implements OnInit, OnDestroy {
 
       tarefa.status = novoStatus;
       console.log('Status da tarefa alterado:', tarefa);
+      
+      // Atualizar também na lista original
+      const index = this.tarefas.findIndex(t => t.id === tarefa.id);
+      if (index !== -1) {
+        this.tarefas[index].status = novoStatus;
+      }
+      
       alert(tarefa.status === 'CONCLUÍDA' ? 'Tarefa marcada como concluída!' : 'Tarefa marcada como pendente!');
+      this.aplicarFiltro(); // Reaplicar filtro após alteração
     } catch (error) {
       console.error('Erro ao alterar status da tarefa:', error);
       alert('Erro ao alterar status da tarefa');
@@ -363,14 +559,24 @@ export class TaskComponent implements OnInit, OnDestroy {
         };
       }
       
+      // Atualizar também na lista filtrada se existir
+      const indexFiltrado = this.tarefasFiltradas.findIndex(t => t.id === this.tarefaParaConcluir.id);
+      if (indexFiltrado !== -1) {
+        this.tarefasFiltradas[indexFiltrado] = { 
+          ...this.tarefasFiltradas[indexFiltrado], 
+          status: 'CONCLUÍDA',
+          obs: this.observacao
+        };
+      }
+      
       console.log('Tarefa marcada como concluída:', this.tarefaParaConcluir.nome);
       alert('Tarefa marcada como concluída com sucesso!');
       
       // Fechar modal e limpar dados
       this.fecharObsModal();
       
-      // Recarregar a lista para garantir sincronização
-      this.carregarTarefas();
+      // Aplicar filtro para atualizar a lista filtrada
+      this.aplicarFiltro();
     } catch (error: any) {
       console.error('Erro ao marcar tarefa como concluída:', error);
       console.error('Detalhes do erro:', {
@@ -404,5 +610,85 @@ export class TaskComponent implements OnInit, OnDestroy {
     }
 
     return null;
+  }
+
+  // Métodos para gravação de voz
+  async iniciarGravacao() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.audioChunks = [];
+      this.isRecording = true;
+      this.novaTarefa.nome = 'Gravado';
+
+      this.mediaRecorder.ondataavailable = (event) => {
+        this.audioChunks.push(event.data);
+      };
+
+      this.mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+        this.audioUrl = URL.createObjectURL(audioBlob);
+        this.audioFile = new File([audioBlob], `audio_${Date.now()}.wav`, { type: 'audio/wav' });
+        this.novaTarefa.audio = this.audioFile.name;
+        
+        // Parar todas as faixas do stream
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      this.mediaRecorder.start();
+      console.log('Gravação iniciada');
+    } catch (error) {
+      console.error('Erro ao iniciar gravação:', error);
+      alert('Erro ao acessar microfone. Verifique as permissões.');
+    }
+  }
+
+  pararGravacao() {
+    if (this.mediaRecorder && this.isRecording) {
+      this.mediaRecorder.stop();
+      this.isRecording = false;
+      console.log('Gravação parada');
+    }
+  }
+
+  reproduzirAudio() {
+    if (this.audioUrl) {
+      const audio = new Audio(this.audioUrl);
+      audio.play();
+    }
+  }
+
+  removerAudio() {
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl);
+    }
+    this.audioUrl = null;
+    this.audioFile = null;
+    this.novaTarefa.audio = '';
+    this.audioChunks = [];
+  }
+
+  // Método para fazer upload do áudio
+  async uploadAudio(): Promise<string | null> {
+    if (!this.audioFile) {
+      return null;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('audio', this.audioFile);
+
+      const response: any = await firstValueFrom(
+        this.http.post(`${this.apiUrl}/upload-audio`, formData)
+      );
+
+      if (response && response.path) {
+        return response.path;
+      }
+      return null;
+    } catch (error) {
+      console.error('Erro ao fazer upload do áudio:', error);
+      return null;
+    }
   }
 }

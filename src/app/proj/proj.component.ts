@@ -18,6 +18,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class ProjComponent implements OnInit, OnDestroy {
   projetos: any[] = [];
+  projetosFiltrados: any[] = [];
   loading: boolean = false;
   showModal: boolean = false;
   editingProjeto: any = null;
@@ -34,6 +35,7 @@ export class ProjComponent implements OnInit, OnDestroy {
     dep: null,
     obs: ''
   };
+  termoBusca: string = ''; 
 
   // URL da API do environment
   private apiUrl = environment.apiUrl;
@@ -72,6 +74,9 @@ export class ProjComponent implements OnInit, OnDestroy {
           pdf_original_name: projeto.pdf_original_name
         });
       });
+      
+      // Inicializar lista filtrada
+      this.aplicarFiltro();
     } catch (error) {
       console.error('Erro ao carregar projetos:', error);
       alert('Erro ao carregar projetos');
@@ -287,8 +292,8 @@ export class ProjComponent implements OnInit, OnDestroy {
         console.log('Projeto marcado como concluído:', projeto.nome);
         alert('Projeto marcado como concluído com sucesso!');
         
-        // Recarregar a lista para garantir sincronização
-        this.carregarProjetos();
+        // Aplicar filtro para atualizar a lista filtrada
+        this.aplicarFiltro();
       } catch (error: any) {
         console.error('Erro ao marcar projeto como concluído:', error);
         console.error('Detalhes do erro:', {
@@ -300,7 +305,62 @@ export class ProjComponent implements OnInit, OnDestroy {
       }
     }
   }
+  aplicarFiltro() {
+    let projetosFiltrados = this.projetos;
 
+    // Aplicar filtro de busca
+    if (this.termoBusca && this.termoBusca.trim() !== '') {
+      const termo = this.termoBusca.toLowerCase().trim();
+      projetosFiltrados = projetosFiltrados.filter(projeto => {
+        return (
+          // Buscar no nome
+          (projeto.nome && projeto.nome.toLowerCase().includes(termo)) ||
+          // Buscar no título (caso exista)
+          (projeto.titulo && projeto.titulo.toLowerCase().includes(termo)) ||
+          // Buscar na descrição
+          (projeto.descricao && projeto.descricao.toLowerCase().includes(termo)) ||
+          // Buscar no status
+          (projeto.status && projeto.status.toLowerCase().includes(termo)) ||
+          // Buscar nas observações
+          (projeto.obs && projeto.obs.toLowerCase().includes(termo)) ||
+          // Buscar no tipo
+          (projeto.tipo && projeto.tipo.toLowerCase().includes(termo)) ||
+          // Buscar no nome do arquivo PDF
+          (projeto.pdf_filename && projeto.pdf_filename.toLowerCase().includes(termo)) ||
+          (projeto.pdf_original_name && projeto.pdf_original_name.toLowerCase().includes(termo)) ||
+          // Buscar na data de início
+          (projeto.data && this.formatarDataParaBusca(projeto.data).includes(termo)) ||
+          // Buscar na data de fim
+          (projeto.fim && this.formatarDataParaBusca(projeto.fim).includes(termo))
+        );
+      });
+    }
+
+    // Ordenar por nome
+    projetosFiltrados = projetosFiltrados.sort((a, b) => {
+      const nomeA = (a.nome || a.titulo || '').toLowerCase();
+      const nomeB = (b.nome || b.titulo || '').toLowerCase();
+      return nomeA.localeCompare(nomeB);
+    });
+
+    this.projetosFiltrados = projetosFiltrados;
+  }
+
+  // Método auxiliar para formatar data para busca
+  private formatarDataParaBusca(data: any): string {
+    if (!data) return '';
+    
+    try {
+      const dataObj = new Date(data);
+      if (!isNaN(dataObj.getTime())) {
+        return dataObj.toLocaleDateString('pt-BR');
+      }
+    } catch (error) {
+      console.error('Erro ao formatar data para busca:', error);
+    }
+    
+    return '';
+  }
   // Novo método: download PDF
   async downloadPDF(projeto: any) {
     if (!projeto.pdf_filename) {
@@ -323,7 +383,15 @@ export class ProjComponent implements OnInit, OnDestroy {
       alert('Erro ao fazer download do PDF');
     }
   }
+  filtrarPorBusca(event: any) {
+    this.termoBusca = event.target.value || '';
+    this.aplicarFiltro();
+  }
 
+  limparBusca() {
+    this.termoBusca = '';
+    this.aplicarFiltro();
+  }
   // Novo método: visualizar PDF
   async visualizarPDF(projeto: any) {
     if (!projeto.pdf_filename) {

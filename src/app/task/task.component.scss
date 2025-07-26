@@ -26,6 +26,24 @@
   gap: 8px;
 }
 
+/* Estilos para o campo de busca */
+.search-input {
+  margin-bottom: 16px;
+  --background: #f8f9fa;
+  --border-radius: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --border-color: #e9ecef;
+  --border-width: 1px;
+  --border-style: solid;
+}
+
+.search-input:focus-within {
+  --border-color: var(--ion-color-primary);
+  --border-width: 2px;
+  box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.1);
+}
+
 .bulk-actions {
   background: #f8f9fa;
   border-radius: 8px;
@@ -201,4 +219,138 @@ ion-select {
 
 .confirm-button {
   margin-top: 16px;
+}
+
+// Estilos para o campo de busca inline
+.search-input-inline {
+  margin-left: 10px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --border-radius: 20px;
+  --background: white;
+  --color: #333;
+  font-size: 14px;
+  max-width: 200px;
+  
+  @media (max-width: 768px) {
+    max-width: 150px;
+    font-size: 13px;
+  }
+  
+  @media (max-width: 480px) {
+    max-width: 120px;
+    font-size: 12px;
+  }
+}
+
+// Estilos para informações de resultados
+.results-info {
+  margin: 10px 0;
+  padding: 8px 12px;
+  background-color: var(--ion-color-primary-tint);
+  border-radius: 8px;
+  border-left: 4px solid var(--ion-color-primary);
+  
+  p {
+    margin: 0;
+    color: var(--ion-color-primary-shade);
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+// Estilos para o botão limpar busca
+ion-title ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-size: 12px;
+  margin-left: 8px;
+  
+  @media (max-width: 768px) {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    font-size: 11px;
+    margin-left: 4px;
+  }
+}
+
+// Estilos para o layout do título com busca
+.title-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  
+  span {
+    font-weight: bold;
+    color: #333;
+  }
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  @media (max-width: 768px) {
+    gap: 4px;
+  }
+}
+
+// Estilos para o campo de gravação de voz
+.audio-section {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  
+  h4 {
+    margin: 0 0 12px 0;
+    color: var(--ion-color-primary);
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.audio-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ion-color-danger);
+  font-weight: 500;
+  font-size: 14px;
+  
+  ion-icon {
+    animation: pulse 1.5s infinite;
+  }
+}
+
+.audio-info {
+  margin-top: 8px;
+  
+  p {
+    margin: 0;
+    color: var(--ion-color-success);
+    font-weight: 500;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }

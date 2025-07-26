@@ -7,6 +7,16 @@
     </ion-buttons>
     <ion-title>
       Tarefas
+      <!-- Campo de busca -->
+    <ion-input
+    label="Filtrar dados"
+    [(ngModel)]="termoBusca"
+    (ionInput)="filtrarPorBusca($event)"
+    placeholder="Digite para buscar em qualquer campo..."
+    clearInput="true"
+    class="search-input"
+    aria-label="Campo de busca para filtrar tarefas"
+  ></ion-input>
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -36,6 +46,8 @@
       </div>
     </div>
 
+    
+
     <!-- Controles de Edição em Massa -->
     <div *ngIf="modoEdicao" class="bulk-actions">
       <div class="bulk-header">
@@ -44,9 +56,9 @@
           color="medium"
           size="small"
           fill="outline"
-          [attr.aria-label]="tarefasSelecionadas.size === tarefas.length ? 'Desmarcar todas as tarefas' : 'Selecionar todas as tarefas'"
+          [attr.aria-label]="tarefasSelecionadas.size === tarefasFiltradas.length ? 'Desmarcar todas as tarefas' : 'Selecionar todas as tarefas'"
         >
-          {{ tarefasSelecionadas.size === tarefas.length ? 'Desmarcar Todas' : 'Selecionar Todas' }}
+          {{ tarefasSelecionadas.size === tarefasFiltradas.length ? 'Desmarcar Todas' : 'Selecionar Todas' }}
         </ion-button>
         <span class="selected-count">
           {{ tarefasSelecionadas.size }} tarefa(s) selecionada(s)
@@ -81,9 +93,9 @@
       Carregando tarefas...
     </div>
 
-    <ion-list *ngIf="!loading && tarefas.length > 0">
+    <ion-list *ngIf="!loading && tarefasFiltradas.length > 0">
       <ion-item 
-        *ngFor="let tarefa of tarefas" 
+        *ngFor="let tarefa of tarefasFiltradas" 
         [class.selected]="tarefasSelecionadas.has(tarefa.id)"
         [class.tarefa-concluida]="isConcluida(tarefa)">
         <!-- Checkbox para seleção em massa -->
@@ -147,8 +159,13 @@
       </ion-item>
     </ion-list>
 
-    <div *ngIf="!loading && tarefas.length === 0" class="no-data">
-      <p>Nenhuma tarefa encontrada.</p>
+    <div *ngIf="!loading && tarefasFiltradas.length === 0" class="no-data">
+      <p *ngIf="termoBusca && termoBusca.trim() !== ''">
+        Nenhuma tarefa encontrada para "{{ termoBusca }}".
+      </p>
+      <p *ngIf="!termoBusca || termoBusca.trim() === ''">
+        Nenhuma tarefa encontrada.
+      </p>
     </div>
   </div>
 </ion-content>
@@ -193,6 +210,69 @@
           placeholder="Digite observações sobre a tarefa (opcional)"
           rows="3"
         ></ion-textarea>
+
+        <!-- Campo de Gravação de Voz -->
+        <div class="audio-section">
+          <h4>Gravação de Voz</h4>
+          
+          <!-- Controles de gravação -->
+          <div class="audio-controls">
+            <ion-button
+              *ngIf="!isRecording && !audioUrl"
+              (click)="iniciarGravacao()"
+              color="primary"
+              fill="outline"
+              size="small"
+              aria-label="Iniciar gravação de voz">
+              <ion-icon name="mic" slot="start"></ion-icon>
+              Gravar Voz
+            </ion-button>
+            
+            <ion-button
+              *ngIf="isRecording"
+              (click)="pararGravacao()"
+              color="danger"
+              fill="outline"
+              size="small"
+              aria-label="Parar gravação de voz">
+              <ion-icon name="stop" slot="start"></ion-icon>
+              Parar Gravação
+            </ion-button>
+            
+            <ion-button
+              *ngIf="audioUrl && !isRecording"
+              (click)="reproduzirAudio()"
+              color="success"
+              fill="outline"
+              size="small"
+              aria-label="Reproduzir áudio gravado">
+              <ion-icon name="play" slot="start"></ion-icon>
+              Reproduzir
+            </ion-button>
+            
+            <ion-button
+              *ngIf="audioUrl && !isRecording"
+              (click)="removerAudio()"
+              color="medium"
+              fill="outline"
+              size="small"
+              aria-label="Remover áudio gravado">
+              <ion-icon name="trash" slot="start"></ion-icon>
+              Remover
+            </ion-button>
+          </div>
+          
+          <!-- Indicador de gravação -->
+          <div *ngIf="isRecording" class="recording-indicator">
+            <ion-icon name="radio-button-on" color="danger"></ion-icon>
+            <span>Gravando...</span>
+          </div>
+          
+          <!-- Informações do áudio -->
+          <div *ngIf="audioUrl && !isRecording" class="audio-info">
+            <p><small>Áudio gravado e pronto para salvar</small></p>
+          </div>
+        </div>
 
         <!-- Linha com Prioridade e Status -->
         <div class="form-row">
