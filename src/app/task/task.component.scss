@@ -87,6 +87,10 @@ ion-item h2 {
   font-weight: bold;
   color: #333;
   margin-bottom: 8px;
+  display: block;
+  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 ion-item p {
@@ -352,5 +356,204 @@ ion-title ion-button {
   }
   100% {
     opacity: 1;
+  }
+}
+
+/* Configurações específicas para smartphones pequenos */
+@media (max-width: 480px) {
+  .header-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .action-buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    font-size: 14px;
+  }
+
+  .bulk-actions {
+    padding: 12px;
+  }
+
+  .bulk-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .bulk-buttons {
+    justify-content: center;
+  }
+
+  ion-item {
+    margin-bottom: 6px;
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
+
+  ion-item h2 {
+    font-size: 16px;
+    margin-bottom: 6px;
+    display: block;
+    width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  ion-item p {
+    font-size: 13px;
+    margin: 2px 0;
+  }
+
+  .prioridade,
+  .projeto,
+  .status {
+    font-size: 12px;
+  }
+
+  ion-button[fill="clear"] {
+    --padding-start: 4px;
+    --padding-end: 4px;
+    min-width: 32px;
+    font-size: 12px;
+  }
+
+  .form-row {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .form-info {
+    padding: 8px;
+    margin: 12px 0;
+  }
+
+  .form-info p {
+    font-size: 11px;
+  }
+
+  .obs-modal-content {
+    padding: 12px;
+  }
+
+  .obs-modal-content h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .obs-modal-content p {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .audio-section {
+    padding: 12px;
+    margin: 12px 0;
+  }
+
+  .audio-section h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .audio-controls {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .recording-indicator {
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .audio-info p {
+    font-size: 12px;
+  }
+}
+
+/* Configurações para telas muito pequenas (smartphones antigos) */
+@media (max-width: 360px) {
+  .header-actions h2 {
+    font-size: 18px;
+  }
+
+  .search-input {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    font-size: 13px;
+  }
+
+  ion-item h2 {
+    font-size: 15px;
+    display: block;
+    width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  ion-item p {
+    font-size: 12px;
+  }
+
+  .prioridade,
+  .projeto,
+  .status {
+    font-size: 11px;
+  }
+
+  ion-button[fill="clear"] {
+    --padding-start: 3px;
+    --padding-end: 3px;
+    min-width: 28px;
+    font-size: 11px;
+  }
+
+  .bulk-actions {
+    padding: 8px;
+  }
+
+  .form-row {
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .obs-modal-content {
+    padding: 8px;
+  }
+
+  .obs-modal-content h3 {
+    font-size: 16px;
+  }
+
+  .obs-modal-content p {
+    font-size: 12px;
+  }
+}
+
+/* Configurações para orientação landscape em smartphones */
+@media (max-width: 768px) and (orientation: landscape) {
+  .header-actions {
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .search-input {
+    max-width: 200px;
+  }
+
+  .form-row {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .form-half {
+    flex: 1;
   }
 }
