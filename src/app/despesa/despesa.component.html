@@ -342,6 +342,18 @@
         <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editingDespesa ? 'Atualizar despesa' : 'Criar despesa'">
           {{ editingDespesa ? 'Atualizar' : 'Criar' }} Despesa
         </ion-button>
+
+        <!-- Botão para criar despesa já paga (apenas quando não estiver editando) -->
+        <ion-button 
+          *ngIf="!editingDespesa"
+          expand="block" 
+          (click)="criarDespesaPaga()"
+          onKeyPress="criarDespesaPaga()" 
+          color="success" 
+          [attr.aria-label]="'Criar despesa paga'"
+          class="mt-2">
+          Criar Despesa Paga
+        </ion-button>
       </form>
     </ion-content>
   </ng-template>

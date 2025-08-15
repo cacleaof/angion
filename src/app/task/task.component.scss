@@ -4,6 +4,13 @@
   color: #666;
 }
 
+.descricao-truncada {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
 .no-data {
   text-align: center;
   padding: 40px 20px;
@@ -87,7 +94,9 @@ ion-item h2 {
   font-weight: bold;
   color: #333;
   margin-bottom: 8px;
-  display: block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -197,6 +206,7 @@ ion-select {
 .status-badge {
   margin-left: 8px;
   font-size: 0.8em;
+  flex-shrink: 0;
 }
 
 .obs-modal-content {

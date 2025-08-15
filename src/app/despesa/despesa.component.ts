@@ -92,6 +92,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
     imagem: '',
     pago: false,
     CD: 'D', // Campo CD com valor padrão 'D' (Débito)
+    tipo: '', // Campo tipo adicionado
     parc: 1, // Campo parc com valor padrão 1 (parcela atual)
     nparc: 1, // Campo nparc com valor padrão 1 (número total de parcelas)
     codbar: '', // Adicionar campo codbar
@@ -575,6 +576,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         imagem: despesa.imagem || '',
         pago: despesa.pago || false,
         CD: despesa.CD || 'D',
+        tipo: despesa.tipo || '',
         parc: despesa.parc || 1,
         nparc: despesa.nparc || 1,
         codbar: despesa.codbar || '', // Adicionar campo codbar
@@ -615,6 +617,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         imagem: '',
         pago: false,
         CD: 'D',
+        tipo: '',
         parc: 1,
         nparc: 1,
         codbar: '', // Adicionar campo codbar
@@ -740,7 +743,8 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         venc: this.formatarData(this.novaDespesa.venc),
         imagem: this.novaDespesa.imagem || '',
         pago: this.novaDespesa.pago || false,
-        tipo: this.novaDespesa.CD || 'D',
+        CD: this.novaDespesa.CD || 'D',
+        tipo: this.novaDespesa.tipo || '',
         parc: parseInt(this.novaDespesa.parc) || 1,
         nparc: parseInt(this.novaDespesa.nparc) || 1,
         codbar: this.novaDespesa.codbar || '',
@@ -776,6 +780,102 @@ export class DespesaComponent implements OnInit, AfterViewInit {
       });
       this.uploadError = 'Erro ao salvar despesa.';
       alert('Erro ao salvar despesa. Verifique os dados e tente novamente.');
+    }
+  }
+
+  async criarDespesaPaga() {
+    this.uploadError = null;
+    if (this.boletoFile) {
+      try {
+        this.uploading = true;
+        this.uploadProgress = 0;
+
+        const formData = new FormData();
+        formData.append('boleto', this.boletoFile);
+
+        const req = this.http.post<any>(
+          `${environment.apiUrl}/upload-boleto`,
+          formData,
+          {
+            reportProgress: true,
+            observe: 'events'
+          }
+        );
+
+        await new Promise<void>((resolve, reject) => {
+          req.subscribe({
+            next: (event) => {
+              if (event.type === HttpEventType.UploadProgress && event.total) {
+                this.uploadProgress = event.loaded / event.total;
+              } else if (event.type === HttpEventType.Response) {
+                if (event.body && event.body.path) {
+                  this.novaDespesa.imagem = event.body.path;
+                  resolve();
+                } else {
+                  this.uploadError = 'Erro ao salvar imagem do boleto.';
+                  reject();
+                }
+              }
+            },
+            error: (err) => {
+              this.uploadError = 'Erro ao enviar imagem do boleto.';
+              this.uploading = false;
+              reject();
+            }
+          });
+        });
+
+        this.uploading = false;
+      } catch (err) {
+        this.uploading = false;
+        this.uploadError = 'Erro ao enviar imagem do boleto.';
+        return;
+      }
+    }
+
+    if (!this.novaDespesa.nome || !this.novaDespesa.valor) {
+      alert('Nome e valor da despesa são obrigatórios');
+      return;
+    }
+
+    try {
+      // Preparar dados para enviar com o campo pago = true (1)
+      const dadosParaSalvar: { [key: string]: any } = {
+        nome: this.novaDespesa.nome,
+        descricao: this.novaDespesa.descricao || '',
+        valor: parseFloat(this.novaDespesa.valor) || 0,
+        venc: this.formatarData(this.novaDespesa.venc),
+        imagem: this.novaDespesa.imagem || '',
+        pago: true || 1, // Campo pago sempre true para despesas pagas
+        tipo: this.novaDespesa.CD || 'D',
+        parc: parseInt(this.novaDespesa.parc) || 1,
+        nparc: parseInt(this.novaDespesa.nparc) || 1,
+        codbar: this.novaDespesa.codbar || '',
+        pix: this.novaDespesa.pix || ''
+      };
+
+      // Remover campos undefined ou null
+      Object.keys(dadosParaSalvar).forEach(key => {
+        if (dadosParaSalvar[key] === undefined || dadosParaSalvar[key] === null) {
+          delete dadosParaSalvar[key];
+        }
+      });
+
+      // Criar a despesa como paga
+      await firstValueFrom(this.http.post(`${this.apiUrl}/despesa`, dadosParaSalvar));
+
+      this.fecharModal();
+      this.carregarDespesas();
+      alert('Despesa paga criada com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao criar despesa paga:', error);
+      console.error('Detalhes do erro:', {
+        status: error?.status,
+        message: error?.message,
+        error: error?.error
+      });
+      this.uploadError = 'Erro ao criar despesa paga.';
+      alert('Erro ao criar despesa paga. Verifique os dados e tente novamente.');
     }
   }
 
@@ -1103,6 +1203,7 @@ export class DespesaComponent implements OnInit, AfterViewInit {
         imagem: '',
         pago: false, // Sempre começar como não paga
         CD: despesa.CD || 'D',
+        tipo: despesa.tipo || '',
         parc: 1, // Sempre começar na primeira parcela
         nparc: despesa.nparc || 1,
         codbar: despesa.codbar || '',

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon, IonGrid, IonRow, IonCol } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -13,7 +13,7 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: 'task.component.html',
   styleUrls: ['task.component.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon, CommonModule, FormsModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon, CommonModule, FormsModule, IonGrid, IonRow, IonCol],
 })
 export class TaskComponent implements OnInit, OnDestroy {
   tarefas: any[] = [];
@@ -36,6 +36,7 @@ export class TaskComponent implements OnInit, OnDestroy {
     status: 'PENDENTE',
     prioridade: 2,
     obs: '',
+    grav: '',
     audio: '' // Novo campo para armazenar o áudio
   };
 
@@ -67,7 +68,9 @@ export class TaskComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private router: Router,
     //private accessibilityService: AccessibilityService
-  ) {}
+  ) {
+    // Registrar os ícones
+  }
 
   ngOnInit() {
     this.carregarTarefas();
@@ -366,12 +369,16 @@ export class TaskComponent implements OnInit, OnDestroy {
         status: tarefa.status || 'PENDENTE',
         prioridade: tarefa.prioridade || 2,
         obs: tarefa.obs || '',
-        audio: tarefa.audio || ''
+        grav: tarefa.grav || ''
+        //audio: tarefa.audio || ''
       };
 
-      // Configurar áudio se existir
-      if (tarefa.audio && tarefa.audio !== '') {
-        this.audioUrl = `${this.apiUrl}/audio/${tarefa.audio}`;
+      // Configurar áudio se existir - CORRIGIDO: usar grav em vez de audio
+      if (tarefa.grav && tarefa.grav !== '') {
+        // Corrigir a URL para evitar dupla barra
+        const audioPath = tarefa.grav.startsWith('/') ? tarefa.grav.substring(1) : tarefa.grav;
+        this.audioUrl = `${this.apiUrl}/${audioPath}`;
+        console.log('Audio URL configurado:', this.audioUrl);
       }
     } else {
       this.editingTarefa = null;
@@ -385,6 +392,7 @@ export class TaskComponent implements OnInit, OnDestroy {
         status: 'PENDENTE',
         prioridade: 2,
         obs: '',
+        grav: '',
         audio: ''
       };
       
@@ -414,7 +422,9 @@ export class TaskComponent implements OnInit, OnDestroy {
       if (this.audioFile) {
         audioPath = await this.uploadAudio();
         if (audioPath) {
-          this.novaTarefa.audio = audioPath;
+          //this.novaTarefa.audio = audioPath;
+          this.novaTarefa.grav = audioPath; // Armazenar o nome do arquivo de áudio na tarefa
+          console.log('Áudio enviado com sucesso:', this.novaTarefa.grav);
         }
       }
 
@@ -620,6 +630,7 @@ export class TaskComponent implements OnInit, OnDestroy {
       this.audioChunks = [];
       this.isRecording = true;
       this.novaTarefa.nome = 'Gravado';
+      this.novaTarefa.data = new Date().toISOString().split('T')[0]; // Definir data atual
 
       this.mediaRecorder.ondataavailable = (event) => {
         this.audioChunks.push(event.data);
@@ -629,7 +640,8 @@ export class TaskComponent implements OnInit, OnDestroy {
         const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
         this.audioUrl = URL.createObjectURL(audioBlob);
         this.audioFile = new File([audioBlob], `audio_${Date.now()}.wav`, { type: 'audio/wav' });
-        this.novaTarefa.audio = this.audioFile.name;
+        //this.novaTarefa.audio = this.audioFile.name;
+        this.novaTarefa.grav = this.audioFile.name; // Armazenar o nome do arquivo de áudio na tarefa
         
         // Parar todas as faixas do stream
         stream.getTracks().forEach(track => track.stop());
@@ -653,8 +665,26 @@ export class TaskComponent implements OnInit, OnDestroy {
 
   reproduzirAudio() {
     if (this.audioUrl) {
-      const audio = new Audio(this.audioUrl);
-      audio.play();
+      console.log('Tentando reproduzir áudio:', this.audioUrl);
+      
+      // Verificar se é uma URL válida
+      if (this.audioUrl.startsWith('blob:')) {
+        // É um blob local (áudio gravado mas não salvo)
+        const audio = new Audio(this.audioUrl);
+        audio.play().catch(error => {
+          console.error('Erro ao reproduzir áudio local:', error);
+          alert('Erro ao reproduzir áudio');
+        });
+      } else {
+        // É uma URL do servidor
+        const audio = new Audio(this.audioUrl);
+        audio.play().catch(error => {
+          console.error('Erro ao reproduzir áudio do servidor:', error);
+          alert('Erro ao reproduzir áudio do servidor');
+        });
+      }
+    } else {
+      console.log('Nenhum áudio disponível para reprodução');
     }
   }
 
@@ -664,7 +694,7 @@ export class TaskComponent implements OnInit, OnDestroy {
     }
     this.audioUrl = null;
     this.audioFile = null;
-    this.novaTarefa.audio = '';
+    //this.novaTarefa.audio = '';
     this.audioChunks = [];
   }
 
@@ -678,13 +708,20 @@ export class TaskComponent implements OnInit, OnDestroy {
       const formData = new FormData();
       formData.append('audio', this.audioFile);
 
+      console.log('Fazendo upload do arquivo:', this.audioFile.name);
+      
       const response: any = await firstValueFrom(
         this.http.post(`${this.apiUrl}/upload-audio`, formData)
       );
 
+      console.log('Resposta do upload:', response);
+      
       if (response && response.path) {
+        console.log('Upload realizado com sucesso. Caminho:', response.path);
         return response.path;
       }
+      
+      console.error('Resposta inválida do servidor:', response);
       return null;
     } catch (error) {
       console.error('Erro ao fazer upload do áudio:', error);

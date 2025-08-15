@@ -4,12 +4,14 @@
       <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home">
         Home
       </ion-button>
-    </ion-buttons>
-    <ion-title>
+        <ion-title>
       Tarefas
+      </ion-title>
+    </ion-buttons>
+  
       <!-- Campo de busca -->
     <ion-input
-    label="Filtrar dados"
+    label="Filtrar"
     [(ngModel)]="termoBusca"
     (ionInput)="filtrarPorBusca($event)"
     placeholder="Digite para buscar em qualquer campo..."
@@ -17,7 +19,7 @@
     class="search-input"
     aria-label="Campo de busca para filtrar tarefas"
   ></ion-input>
-    </ion-title>
+    
   </ion-toolbar>
 </ion-header>
 
@@ -30,14 +32,13 @@
 
   <div class="ion-padding">
     <div class="header-actions">
-      <h2>Lista de Tarefas</h2>
+
       <div class="action-buttons">
         <ion-button
           (click)="alternarModoEdicao()"
           [color]="modoEdicao ? 'warning' : 'secondary'"
           size="small"
-          [attr.aria-label]="modoEdicao ? 'Sair do modo de edição' : 'Entrar no modo de edição'"
-        >
+          [attr.aria-label]="modoEdicao ? 'Sair do modo de edição' : 'Entrar no modo de edição'">
           {{ modoEdicao ? 'Sair da Edição' : 'Editar' }}
         </ion-button>
         <ion-button (click)="abrirModal()" color="primary" size="small" aria-label="Adicionar nova tarefa">
@@ -45,9 +46,6 @@
         </ion-button>
       </div>
     </div>
-
-    
-
     <!-- Controles de Edição em Massa -->
     <div *ngIf="modoEdicao" class="bulk-actions">
       <div class="bulk-header">
@@ -56,8 +54,7 @@
           color="medium"
           size="small"
           fill="outline"
-          [attr.aria-label]="tarefasSelecionadas.size === tarefasFiltradas.length ? 'Desmarcar todas as tarefas' : 'Selecionar todas as tarefas'"
-        >
+          [attr.aria-label]="tarefasSelecionadas.size === tarefasFiltradas.length ? 'Desmarcar todas as tarefas' : 'Selecionar todas as tarefas'">
           {{ tarefasSelecionadas.size === tarefasFiltradas.length ? 'Desmarcar Todas' : 'Selecionar Todas' }}
         </ion-button>
         <span class="selected-count">
@@ -98,6 +95,7 @@
         *ngFor="let tarefa of tarefasFiltradas" 
         [class.selected]="tarefasSelecionadas.has(tarefa.id)"
         [class.tarefa-concluida]="isConcluida(tarefa)">
+        <ion-grid>
         <!-- Checkbox para seleção em massa -->
         <ion-checkbox
           *ngIf="modoEdicao"
@@ -118,28 +116,37 @@
         ></ion-checkbox>
 
         <ion-label [class.concluida]="isConcluida(tarefa)">
+          <ion-row>
           <h2>
             {{ tarefa.nome }}
+          </h2>
             <ion-badge 
               *ngIf="isConcluida(tarefa)" 
               color="success" 
               class="status-badge">
               Concluída
             </ion-badge>
-          </h2>
-          <p *ngIf="tarefa.descricao">{{ tarefa.descricao }}</p>
+          </ion-row>
+          <ion-row>
+          <p *ngIf="tarefa.descricao" class="descricao-truncada">{{ tarefa.descricao }}</p>
+          </ion-row>
+          <ion-row>
           <p *ngIf="tarefa.prioridade" class="prioridade" [style.color]="getPrioridadeColor(tarefa.prioridade)">
             Prioridade: {{ getPrioridadeNome(tarefa.prioridade) }}
           </p>
-          <p *ngIf="tarefa.data">Data: {{ tarefa.data | date:'dd/MM/yyyy' }}</p>
-          <p *ngIf="tarefa.proj" class="projeto">Projeto: {{ getProjetoNome(tarefa.proj) }}</p>
-          <p *ngIf="tarefa.status && !isConcluida(tarefa)" class="status">Status: {{ tarefa.status }}</p>
-        </ion-label>
-
-        <!-- Botões de ação individuais (apenas quando não está em modo de edição) -->
-        <div *ngIf="!modoEdicao" slot="end">
-          <!-- Botão Concluído - só mostra se a tarefa não estiver concluída -->
-          <ion-button 
+          </ion-row>
+          <ion-row>
+            <ion-col><p *ngIf="tarefa.data">Data: {{ tarefa.data | date:'dd/MM/yyyy' }}</p> </ion-col>
+            <ion-col><p *ngIf="tarefa.proj" class="projeto">Projeto: {{ getProjetoNome(tarefa.proj) }}</p></ion-col>
+            <ion-col><p *ngIf="tarefa.status && !isConcluida(tarefa)" class="status">Status: {{ tarefa.status }}</p></ion-col>
+          </ion-row>
+         </ion-label>
+         <div *ngIf="!modoEdicao">
+         <ion-row>
+          <ion-col>
+         <!--Botões de ação individuais (apenas quando não está em modo de edição) -->
+         <!--Botão Concluído - só mostra se a tarefa não estiver concluída -->
+           <ion-button
             *ngIf="!isConcluida(tarefa)"
             fill="clear" 
             (click)="marcarComoConcluida(tarefa)" 
@@ -148,14 +155,20 @@
             class="action-button">
             Concluído
           </ion-button>
-          
-          <ion-button fill="clear" (click)="abrirModal(tarefa)" color="primary" [attr.aria-label]="'Editar tarefa ' + tarefa.nome">
+          </ion-col>
+          <ion-col>
+          <ion-button style="display: block;" fill="clear" (click)="abrirModal(tarefa)" color="primary" [attr.aria-label]="'Editar tarefa ' + tarefa.nome">
             Editar
           </ion-button>
-          <ion-button fill="clear" (click)="deletarTarefa(tarefa)" color="danger" [attr.aria-label]="'Deletar tarefa ' + tarefa.nome">
+          </ion-col>
+          <ion-col>
+          <ion-button style="display: block;" (click)="deletarTarefa(tarefa)" color="danger" [attr.aria-label]="'Deletar tarefa ' + tarefa.nome">
             Deletar
-          </ion-button>
-        </div>
+          </ion-button> 
+          </ion-col>
+          </ion-row>
+         </div>
+        </ion-grid>
       </ion-item>
     </ion-list>
 
@@ -224,7 +237,7 @@
               fill="outline"
               size="small"
               aria-label="Iniciar gravação de voz">
-              <ion-icon name="mic" slot="start"></ion-icon>
+              <ion-icon name="mic-outline" slot="start"></ion-icon>
               Gravar Voz
             </ion-button>
             
@@ -235,7 +248,7 @@
               fill="outline"
               size="small"
               aria-label="Parar gravação de voz">
-              <ion-icon name="stop" slot="start"></ion-icon>
+              <ion-icon name="stop-outline" slot="start"></ion-icon>
               Parar Gravação
             </ion-button>
             
@@ -246,7 +259,7 @@
               fill="outline"
               size="small"
               aria-label="Reproduzir áudio gravado">
-              <ion-icon name="play" slot="start"></ion-icon>
+              <ion-icon name="play-outline" slot="start"></ion-icon>
               Reproduzir
             </ion-button>
             
@@ -257,20 +270,21 @@
               fill="outline"
               size="small"
               aria-label="Remover áudio gravado">
-              <ion-icon name="trash" slot="start"></ion-icon>
+              <ion-icon name="trash-outline" slot="start"></ion-icon>
               Remover
             </ion-button>
           </div>
           
           <!-- Indicador de gravação -->
           <div *ngIf="isRecording" class="recording-indicator">
-            <ion-icon name="radio-button-on" color="danger"></ion-icon>
+            <ion-icon name="radio-button-on-outline" color="danger"></ion-icon>
             <span>Gravando...</span>
           </div>
           
           <!-- Informações do áudio -->
           <div *ngIf="audioUrl && !isRecording" class="audio-info">
             <p><small>Áudio gravado e pronto para salvar</small></p>
+            <p *ngIf="novaTarefa.grav"><small>Caminho: {{ novaTarefa.grav }}</small></p>
           </div>
         </div>
 

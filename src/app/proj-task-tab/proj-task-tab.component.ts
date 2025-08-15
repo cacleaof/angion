@@ -341,6 +341,7 @@ export class ProjTaskTabComponent implements OnInit {
       alert('Tarefa marcada como concluída!');
     } catch (error) {
       console.error('Erro ao marcar tarefa como concluída:', error);
+      console.log('Tarefa:', this.tarefaParaConcluir);
       alert('Erro ao marcar tarefa como concluída');
     }
   }

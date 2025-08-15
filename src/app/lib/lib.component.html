@@ -1,3 +1,29 @@
-<p>
-  lib works!
-</p>
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home" class="mobile-button">
+    Home
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="title-content">
+        <span>Biblioteca</span>
+        <div class="search-container">
+          <ion-input
+            name="proc"
+            placeholder="Filtrar Dados"
+            
+            (ionInput)="filtrarPorBusca($event)"
+            clearInput="true"
+            class="search-input-inline"
+          ></ion-input>
+        </div>
+      </div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-list *ngFor="let lib of libs">
+<ion-item>
+{{ lib.nome }} {{ lib.descricao }} {{ lib.imagem }}
+</ion-item>
+</ion-list>
