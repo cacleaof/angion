@@ -4,13 +4,14 @@ import { ProjService } from '../services/proj.service';
 import { Proj } from '../model/proj';
 import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
+import { IonHeader, IonButton, IonButtons } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-proj-tab',
   templateUrl: './proj-tab.component.html',
   styleUrls: ['./proj-tab.component.scss'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [IonHeader, IonButton, IonButtons, CommonModule],
 })
 export class ProjTabComponent implements OnInit {
   projetos: Proj[] = [];
@@ -51,6 +52,16 @@ export class ProjTabComponent implements OnInit {
     if (projeto.id) {
       this.router.navigate(['/proj-task-tab', projeto.id]);
     }
+  }
+
+    navegarParaHome() {
+    this.router.navigate(['/dashboard']);
+  }
+
+  ativarProjetos() {
+    // Lógica para ativar projetos
+    console.log('Ativando projetos...');
+    // Aqui você pode implementar a lógica específica para ativar projetos
   }
 
   ordenarProjetosPorDependencia() {

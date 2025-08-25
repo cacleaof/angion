@@ -1,0 +1,152 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home">
+        Home
+      </ion-button>
+      <ion-button 
+        (click)="alternarOrdenacao()" 
+        [color]="ordenacaoAscendente ? 'success' : 'warning'"
+        aria-label="Alternar ordenação da agenda">
+        {{ ordenacaoAscendente ? '↑ Asc' : '↓ Desc' }}
+      </ion-button>
+      <ion-button 
+        (click)="alternarVisualizacao()" 
+        [color]="visualizacaoDetalhada ? 'tertiary' : 'medium'"
+        aria-label="Alternar visualização da agenda">
+        {{ visualizacaoDetalhada ? 'Detalhe' : 'Simples' }}
+      </ion-button>
+      <ion-button 
+        (click)="abrirSeletorProjetos()" 
+        [color]="projetoSelecionado === 'todos' ? 'success' : 'warning'"
+        aria-label="Selecionar projeto para filtrar">
+        {{ projetoSelecionado === 'todos' ? '📋 Todos' : '📋 ' + projetoSelecionado }}
+      </ion-button>
+      <ion-input
+        name="filtro"
+        placeholder="Filtrar Tarefas"
+        [(ngModel)]="termoBusca"
+        (ionInput)="filtrarPorBusca($event)"
+        clearInput="true"
+        class="search-input-inline"
+        style="margin-left: 10px; min-width: 200px;"
+      ></ion-input>
+      <ion-button 
+        *ngIf="termoBusca"
+        (click)="limparBusca()" 
+        color="medium" 
+        size="small"
+        aria-label="Limpar filtro de busca"
+        style="margin-left: 5px;">
+        Limpar
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Agenda</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="navegarParaTarefas()" color="secondary" aria-label="Ir para Tarefas">
+        Tarefas
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Agenda</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <h2>Minha Agenda</h2>
+    
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Carregando agenda...</p>
+    </div>
+
+    <!-- Lista de Tarefas por Data -->
+    <div *ngIf="!loading" class="agenda-container">
+      <!-- Log temporário -->
+      <div style="background: #e8f4fd; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px;">
+        <p><strong>Ordenação:</strong> {{ ordenacaoAscendente ? '↑ Ascendente (mais antiga primeiro)' : '↓ Descendente (mais recente primeiro)' }}</p>
+        <p><strong>Prioridade:</strong> 🚨 Urgente → 🔴 Alta → 🟡 Média → 🟢 Baixa</p>
+        <p><strong>Status:</strong> ✅ Concluídas aparecem tachadas</p>
+        <p><strong>Visualização:</strong> {{ visualizacaoDetalhada ? 'Detalhada' : 'Simples' }}</p>
+        <p><strong>Projeto:</strong> {{ projetoSelecionado === 'todos' ? 'Todos os Projetos' : projetoSelecionado }}</p>
+        <p><strong>Filtro:</strong> {{ termoBusca ? `"${termoBusca}" - ${tarefasFiltradas.length} de ${tarefas.length} tarefas` : 'Nenhum filtro aplicado' }}</p>
+      </div>
+      
+      <div *ngIf="tarefasPorData.size === 0" class="sem-tarefas">
+        <div class="empty-icon">📅</div>
+        <p>Nenhuma tarefa agendada encontrada.</p>
+        <ion-button (click)="navegarParaTarefas()" color="primary" fill="outline">
+          Criar Nova Tarefa
+        </ion-button>
+      </div>
+
+      <div *ngFor="let item of tarefasPorDataArray; let i = index" class="data-section">
+        <h3 class="data-header">{{ item.data }}</h3>
+        
+        <ion-list>
+          <ion-item *ngFor="let tarefa of item.tarefas; let j = index" class="tarefa-item">
+            <ion-label>
+              <div class="tarefa-header">
+                <span class="prioridade-indicator" 
+                      [style.background-color]="isTarefaConcluida(tarefa.status) ? 'var(--ion-color-success)' : getPrioridadeColor(tarefa.prioridade)"
+                      [class.concluida]="isTarefaConcluida(tarefa.status)">
+                  {{ isTarefaConcluida(tarefa.status) ? '✓' : getPrioridadeNome(tarefa.prioridade).charAt(0) }}
+                </span>
+                <h2 class="tarefa-nome" [class.tarefa-concluida]="isTarefaConcluida(tarefa.status)">
+                  {{ tarefa.nome || 'Sem nome' }}
+                </h2>
+              </div>
+              
+              <!-- Visualização detalhada -->
+              <div *ngIf="visualizacaoDetalhada">
+                <p *ngIf="tarefa.descricao" class="tarefa-descricao">{{ tarefa.descricao }}</p>
+                
+                <div class="tarefa-info">
+                  <ion-badge 
+                    [style.background-color]="getStatusColor(tarefa.status)"
+                    class="status-badge">
+                    {{ tarefa.status }}
+                  </ion-badge>
+                  
+                  <ion-badge 
+                    [style.background-color]="getPrioridadeColor(tarefa.prioridade)"
+                    class="prioridade-badge">
+                    {{ getPrioridadeNome(tarefa.prioridade) }}
+                  </ion-badge>
+                  
+                  <span *ngIf="tarefa.proj" class="projeto-info">
+                    📋 {{ getProjetoNome(tarefa.proj) }}
+                  </span>
+                </div>
+                
+                <p *ngIf="tarefa.obs" class="observacao">
+                  <strong>Observação:</strong> {{ tarefa.obs }}
+                </p>
+              </div>
+              
+              <!-- Visualização simples - apenas nome -->
+              <div *ngIf="!visualizacaoDetalhada">
+              </div>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
+    </div>
+
+    <!-- Botão para atualizar -->
+    <ion-button 
+      expand="block" 
+      (click)="carregarTarefas()" 
+      [disabled]="loading"
+      size="small"
+      class="refresh-button">
+      {{ loading ? 'Carregando...' : 'Atualizar Agenda' }}
+    </ion-button>
+  </div>
+</ion-content>

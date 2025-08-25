@@ -1,0 +1,262 @@
+// Loading
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--ion-color-light);
+    border-top: 4px solid var(--ion-color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Container principal da agenda
+.agenda-container {
+  margin-bottom: 20px;
+}
+
+// Seção de data
+.data-section {
+  margin-bottom: 24px;
+  
+  .data-header {
+    color: var(--ion-color-primary);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 16px 0 12px 0;
+    padding: 8px 0;
+    border-bottom: 2px solid var(--ion-color-primary);
+  }
+}
+
+// Item de tarefa
+.tarefa-item {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  --background: white;
+  border: 1px solid var(--ion-color-light);
+  
+  &:hover {
+    --background: var(--ion-color-light);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  transition: all 0.2s ease;
+}
+
+// Nome da tarefa
+.tarefa-nome {
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+// Visualização simples
+.tarefa-simples {
+  color: var(--ion-color-medium);
+  font-size: 12px;
+  font-style: italic;
+  margin: 4px 0;
+  opacity: 0.7;
+}
+
+// Descrição da tarefa
+.tarefa-descricao {
+  color: var(--ion-color-medium);
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+// Informações da tarefa
+.tarefa-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+// Badges de status e prioridade
+.status-badge,
+.prioridade-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 12px;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+// Informação do projeto
+.projeto-info {
+  font-size: 12px;
+  color: var(--ion-color-primary);
+  font-weight: 500;
+  padding: 4px 8px;
+  background: var(--ion-color-light);
+  border-radius: 6px;
+}
+
+// Observação
+.observacao {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--ion-color-light);
+  border-radius: 6px;
+  border-left: 3px solid var(--ion-color-primary);
+  
+  strong {
+    color: var(--ion-color-dark);
+  }
+}
+
+// Mensagem quando não há tarefas
+.sem-tarefas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin: 0 0 20px 0;
+    font-size: 16px;
+  }
+}
+
+// Botão de atualizar
+.refresh-button {
+  margin-top: 20px;
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .tarefa-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .data-header {
+    font-size: 16px;
+  }
+  
+  .tarefa-nome {
+    font-size: 15px;
+  }
+}
+
+// Animações
+.tarefa-item {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Estados especiais
+.tarefa-item {
+  &.tarefa-urgente {
+    border-color: var(--ion-color-danger);
+    --background: rgba(235, 68, 90, 0.05);
+  }
+  
+  &.tarefa-concluida {
+    border-color: var(--ion-color-success);
+    --background: rgba(46, 213, 115, 0.05);
+  }
+}
+
+// Botão de projeto
+ion-button[aria-label*="Selecionar projeto"] {
+  min-width: 120px;
+  font-size: 12px;
+  
+  &::part(native) {
+    padding: 8px 12px;
+  }
+}
+
+// Indicador de prioridade
+.tarefa-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.prioridade-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  
+  &.concluida {
+    font-size: 14px;
+    transform: scale(1.1);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.tarefa-nome {
+  margin: 0;
+  flex: 1;
+  
+  &.tarefa-concluida {
+    text-decoration: line-through;
+    text-decoration-color: var(--ion-color-success);
+    text-decoration-thickness: 2px;
+    color: var(--ion-color-medium);
+    opacity: 0.8;
+    font-style: italic;
+    
+    // Adicionar um pequeno espaçamento para o texto tachado
+    text-decoration-skip-ink: none;
+  }
+}

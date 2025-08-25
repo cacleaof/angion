@@ -1,0 +1,181 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="navegarParaDashboard()" color="primary" aria-label="Voltar para Dashboard" class="mobile-button">
+        Dashboard
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Painel Administrativo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="abrirModalAdicionar()" color="success" aria-label="Adicionar usuário">
+        + Usuário
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="admin-container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Gerenciamento de Usuários</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Gerencie usuários do sistema e permissões administrativas.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <div *ngIf="loading" class="loading">
+      <ion-progress-bar type="indeterminate"></ion-progress-bar>
+      <p>Carregando usuários...</p>
+    </div>
+
+    <ion-list *ngIf="!loading && users.length > 0">
+      <ion-item *ngFor="let user of users" class="user-item">
+        <ion-label>
+          <h2>{{ user.nome }}</h2>
+          <p>{{ user.email }}</p>
+          <p class="admin-status" [class.admin]="user.adm === 'S'">
+            {{ user.adm === 'S' ? 'Administrador' : 'Usuário' }}
+          </p>
+        </ion-label>
+        
+        <div slot="end" class="user-actions">
+          <ion-button 
+            fill="clear" 
+            (click)="abrirModalEditar(user)" 
+            color="primary" 
+            [disabled]="isCurrentUser(user)"
+            aria-label="Editar usuário">
+            Editar
+          </ion-button>
+          <ion-button 
+            fill="clear" 
+            (click)="deletarUsuario(user)" 
+            color="danger" 
+            [disabled]="isCurrentUser(user)"
+            aria-label="Deletar usuário">
+            Deletar
+          </ion-button>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <div *ngIf="!loading && users.length === 0" class="no-users">
+      <p>Nenhum usuário encontrado.</p>
+    </div>
+  </div>
+</ion-content>
+
+<!-- Modal para adicionar usuário -->
+<ion-modal [isOpen]="showAddUserModal" (didDismiss)="fecharModalAdicionar()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Adicionar Usuário</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="fecharModalAdicionar()" aria-label="Cancelar">Cancelar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <form (ngSubmit)="adicionarUsuario()">
+        <ion-input
+          label="Nome *"
+          [(ngModel)]="newUser.nome"
+          name="nome"
+          required
+          placeholder="Digite o nome do usuário"
+        ></ion-input>
+        
+        <ion-input
+          label="Email *"
+          [(ngModel)]="newUser.email"
+          name="email"
+          required
+          type="email"
+          placeholder="Digite o email do usuário"
+        ></ion-input>
+        
+        <ion-input
+          label="Senha *"
+          [(ngModel)]="newUser.password"
+          name="password"
+          required
+          type="password"
+          placeholder="Digite a senha do usuário"
+        ></ion-input>
+        
+        <ion-select
+          label="Tipo de Usuário"
+          [(ngModel)]="newUser.adm"
+          name="adm"
+          placeholder="Selecione o tipo"
+        >
+          <ion-select-option value="N">Usuário</ion-select-option>
+          <ion-select-option value="S">Administrador</ion-select-option>
+        </ion-select>
+        
+        <ion-button
+          expand="block"
+          type="submit"
+          color="success"
+        >
+          Adicionar Usuário
+        </ion-button>
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- Modal para editar usuário -->
+<ion-modal [isOpen]="showEditUserModal" (didDismiss)="fecharModalEditar()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Editar Usuário</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="fecharModalEditar()" aria-label="Cancelar">Cancelar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <form (ngSubmit)="editarUsuario()">
+        <ion-input
+          label="Nome *"
+          [(ngModel)]="editingUser.nome"
+          name="nome"
+          required
+          placeholder="Digite o nome do usuário"
+        ></ion-input>
+        
+        <ion-input
+          label="Email *"
+          [(ngModel)]="editingUser.email"
+          name="email"
+          required
+          type="email"
+          placeholder="Digite o email do usuário"
+        ></ion-input>
+        
+        <ion-select
+          label="Tipo de Usuário"
+          [(ngModel)]="editingUser.adm"
+          name="adm"
+          placeholder="Selecione o tipo"
+        >
+          <ion-select-option value="N">Usuário</ion-select-option>
+          <ion-select-option value="S">Administrador</ion-select-option>
+        </ion-select>
+        
+        <ion-button
+          expand="block"
+          type="submit"
+          color="primary"
+        >
+          Atualizar Usuário
+        </ion-button>
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>

@@ -77,6 +77,13 @@ export class DashboardPage implements OnInit, OnDestroy {
   navegarParaDespesas() {
     this.router.navigate(['/despesa']);
   }
+  navegarParaAgenda() {
+    this.router.navigate(['/agenda']);
+  }
+
+  navegarParaConta() {
+    this.router.navigate(['/conta']);
+  }
 
   navegarParaProjetos() {
     this.router.navigate(['/proj']);
@@ -93,5 +100,15 @@ export class DashboardPage implements OnInit, OnDestroy {
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  // Adicionar método para verificar se é admin
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  // Adicionar método para navegar para admin
+  navegarParaAdmin() {
+    this.router.navigate(['/admin']);
   }
 }

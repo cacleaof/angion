@@ -6,6 +6,7 @@ export interface User {
   id: number;
   email: string;
   name?: string;
+  adm?: string; // Campo para verificar se é admin (S ou N)
   // Adicione outros campos conforme necessário
 }
 
@@ -123,5 +124,11 @@ export class AuthService {
       localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
       console.log('Token renovado');
     }
+  }
+
+  // Adicionar método para verificar se é admin
+  isAdmin(): boolean {
+    const user = this.currentUserSubject.value;
+    return user ? user.adm === 'S' : false;
   }
 } 

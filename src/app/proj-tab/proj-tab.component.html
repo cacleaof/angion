@@ -1,3 +1,12 @@
+<ion-header [translucent]="true">
+   <ion-buttons slot="start">
+      <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home" class="mobile-button">
+        Home
+      </ion-button>
+      <ion-button (click)="ativarProjetos()" color="primary" aria-label="Ativar projetos" class="mobile-button">
+        ATIVO
+      </ion-button>
+    </ion-buttons>
 <div class="proj-tab-container">
   <!-- Loading -->
   <div *ngIf="loading" class="loading-container">
@@ -86,3 +95,4 @@
     </div>
   </div>
 </div>
+</ion-header>

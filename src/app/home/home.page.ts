@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 //import { AccessibilityService } from '../services/accessibility.service';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -33,10 +34,18 @@ export class HomePage implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     private router: Router,
+    private authService: AuthService,
     //private accessibilityService: AccessibilityService
   ) {}
 
   ngOnInit() {
+    // Verificar se o usuário é admin antes de carregar despesas
+    if (!this.authService.isAdmin()) {
+      console.log('Usuário não é admin, redirecionando para dashboard...');
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+    
     this.carregarDespesas();
     //this.accessibilityService.setupComponentAccessibility();
   }
@@ -73,6 +82,11 @@ export class HomePage implements OnInit, OnDestroy {
 
   navegarParaTarefas() {
     this.router.navigate(['/task']);
+  }
+
+  // Método para verificar se é admin
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
   }
 
   abrirModal(despesa?: any) {

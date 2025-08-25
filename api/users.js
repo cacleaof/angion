@@ -12,20 +12,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Dados de exemplo
+    // Dados de exemplo com campo adm
     if (req.method === 'GET') {
       const users = [
         {
           id: 1,
           email: 'admin@example.com',
           password: '123456',
-          nome: 'Administrador'
+          nome: 'Administrador',
+          adm: 'S'
         },
         {
           id: 2,
           email: 'user@example.com',
           password: '123456',
-          nome: 'Usuário'
+          nome: 'Usuário',
+          adm: 'N'
         }
       ];
 
@@ -33,6 +35,7 @@ export default async function handler(req, res) {
     } else if (req.method === 'POST') {
       const novoUsuario = req.body;
       novoUsuario.id = Date.now();
+      novoUsuario.adm = novoUsuario.adm || 'N'; // Padrão é usuário
 
       res.status(201).json(novoUsuario);
     } else if (req.method === 'PUT') {

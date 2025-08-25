@@ -32,7 +32,17 @@
 
     <!-- Botões de Navegação -->
     <div class="navigation-buttons">
+       <ion-button
+        expand="block"
+        color="medium"
+        (click)="navegarParaAgenda()"
+        class="nav-button"
+        aria-label="Navegar para Agenda"
+      >
+        Agenda
+      </ion-button>
       <ion-button
+        *ngIf="isAdmin()"
         expand="block"
         color="primary"
         (click)="navegarParaDespesas()"
@@ -41,7 +51,15 @@
       >
         Despesas
       </ion-button>
-
+      <ion-button
+        expand="block"
+        color="success"
+        (click)="navegarParaConta()"
+        class="nav-button"
+        aria-label="Navegar para Conta"
+      >
+        Conta Corrente
+      </ion-button>
       <ion-button
         expand="block"
         color="secondary"
@@ -73,8 +91,8 @@
       </ion-button>
     </div>
 
-    <!-- Seção de Despesas Não Pagas -->
-    <div class="recent-section">
+    <!-- Seção de Despesas Não Pagas - Apenas para Administradores -->
+    <div *ngIf="isAdmin()" class="recent-section">
 
       <ion-button
         expand="block"
@@ -85,7 +103,7 @@
       >
         {{ loading ? 'Carregando...' : 'Atualizar' }}
       </ion-button>
-  <h3>Despesas com Pagamento Pendentes</h3>
+  <h3>Despesas com Pagamento Pendentes (Apenas Administradores)</h3>
       <div *ngIf="loading" class="loading">
         Carregando despesas...
       </div>
@@ -115,3 +133,13 @@
     </div>
   </div>
 </ion-content>
+
+<!-- Adicionar botão admin se for administrador -->
+<ion-button 
+  *ngIf="isAdmin()"
+  (click)="navegarParaAdmin()" 
+  color="warning" 
+  expand="block"
+  class="admin-button">
+  Painel Administrativo
+</ion-button>

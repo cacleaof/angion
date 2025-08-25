@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { LoginGuard } from './guards/login.guard';
+import { AdminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -23,9 +24,19 @@ export const routes: Routes = [
     loadComponent: () => import('./home/home.page').then(m => m.HomePage),
     canActivate: [AuthGuard]
   },
+    {
+    path: 'agenda',
+    loadComponent: () => import('./agenda/agenda.component').then(m => m.AgendaComponent),
+    canActivate: [AuthGuard]
+  },
   {
     path: 'despesa',
     loadComponent: () => import('./despesa/despesa.component').then(m => m.DespesaComponent),
+    canActivate: [AdminGuard]
+  },
+    {
+    path: 'conta',
+    loadComponent: () => import('./conta/conta.component').then(m => m.ContaComponent),
     canActivate: [AuthGuard]
   },
   {
@@ -62,5 +73,10 @@ export const routes: Routes = [
     path: 'lib',
     loadComponent: () => import('./lib/lib.component').then(m => m.LibComponent),
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin',
+    loadComponent: () => import('./admin/admin.component').then(m => m.AdminComponent),
+    canActivate: [AdminGuard]
   }
 ];
