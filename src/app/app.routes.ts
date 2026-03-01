@@ -78,5 +78,15 @@ export const routes: Routes = [
     path: 'admin',
     loadComponent: () => import('./admin/admin.component').then(m => m.AdminComponent),
     canActivate: [AdminGuard]
+  },
+  {
+    path: 'gantt',
+    loadComponent: () => import('./gantt/gantt.component').then(m => m.GanttComponent),
+    canActivate: [AuthGuard]
+  },
+   {
+    path: 'diario',
+    loadComponent: () => import('./diario/diario.component').then(m => m.DiarioComponent),
+    canActivate: [AuthGuard]
   }
 ];

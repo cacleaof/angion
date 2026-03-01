@@ -77,6 +77,9 @@ export class DashboardPage implements OnInit, OnDestroy {
   navegarParaDespesas() {
     this.router.navigate(['/despesa']);
   }
+  navegarParaDiario() {
+    this.router.navigate(['/diario']);
+  }
   navegarParaAgenda() {
     this.router.navigate(['/agenda']);
   }
@@ -95,6 +98,10 @@ export class DashboardPage implements OnInit, OnDestroy {
 
    navegarParaLib() {
     this.router.navigate(['/lib']);
+  }
+
+  navegarParaGantt() {
+    this.router.navigate(['/gantt']);
   }
 
   logout() {

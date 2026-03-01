@@ -1,0 +1,274 @@
+  <ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+       <ion-button (click)="navegarParaHome()" color="primary" aria-label="Voltar para Home" class="mobile-button">
+        Home
+      </ion-button>
+        <ion-title>Cronograma Gantt</ion-title>
+      <ion-button 
+        (click)="alternarOrdenacao()" 
+        [color]="ordenacaoAscendente ? 'success' : 'warning'"
+        fill="clear"
+        class="ordenacao-btn">
+        {{ ordenacaoAscendente ? '↑ Asc' : '↓ Desc' }}
+      </ion-button>
+      <ion-button 
+        (click)="alternarVisualizacao()" 
+        [color]="visualizacaoDetalhada ? 'tertiary' : 'medium'"
+        fill="clear"
+        class="visualizacao-btn">
+        {{ visualizacaoDetalhada ? 'Detalhe' : 'Simples' }}
+      </ion-button>
+      <ion-button 
+        (click)="abrirSeletorProjetos()" 
+        [color]="projetoSelecionado === '' ? 'success' : 'warning'"
+        fill="clear"
+        class="projeto-selector-btn-header">
+        {{ projetoSelecionado === '' ? '📋 Todos os Projetos' : '📋 ' + getProjetoNome(projetoSelecionado) }}
+      </ion-button>
+      <ion-button (click)="toggleViewMode()" fill="clear">
+        {{ viewMode === 'projeto' ? 'Ver Tarefas' : 'Ver Projetos' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+     <!-- Controles de Configuração -->
+   <ion-card>
+     <ion-card-header>
+       <ion-card-title>Configurações</ion-card-title>
+     </ion-card-header>
+    <ion-card-content>
+             <ion-grid>
+         <ion-row>
+           <ion-col size="12">
+             <ion-item>
+               <ion-label position="stacked">Escala</ion-label>
+               <ion-select [(ngModel)]="escala" (ionChange)="alterarPeriodo()">
+                 <ion-select-option value="dia">Dia</ion-select-option>
+                 <ion-select-option value="semana">Semana</ion-select-option>
+                 <ion-select-option value="mes">Mês</ion-select-option>
+               </ion-select>
+             </ion-item>
+           </ion-col>
+         </ion-row>
+        <ion-row>
+          <ion-col size="6">
+            <ion-item>
+              <ion-label position="stacked">Data Início</ion-label>
+              <ion-input 
+                type="date" 
+                [(ngModel)]="dataInicio"
+                (ionChange)="alterarPeriodo()">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6">
+            <ion-item>
+              <ion-label position="stacked">Data Fim</ion-label>
+              <ion-input 
+                type="date" 
+                [(ngModel)]="dataFim"
+                (ionChange)="alterarPeriodo()">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+     </ion-card>
+
+   <!-- Indicadores de Estado -->
+   <div class="estado-indicadores">
+     <ion-card>
+       <ion-card-content class="indicadores-content">
+         <div class="indicador-item">
+           <strong>Ordenação:</strong> 
+           {{ ordenacaoAscendente ? '↑ Ascendente (mais antiga primeiro)' : '↓ Descendente (mais recente primeiro)' }}
+         </div>
+         <div class="indicador-item">
+           <strong>Visualização:</strong> 
+           {{ visualizacaoDetalhada ? 'Detalhada' : 'Simples' }}
+         </div>
+         <div class="indicador-item">
+           <strong>Projeto:</strong> 
+           {{ projetoSelecionado === '' ? 'Todos os Projetos' : getProjetoNome(projetoSelecionado) }}
+         </div>
+         <div class="indicador-item">
+           <strong>Modo:</strong> 
+           {{ viewMode === 'projeto' ? 'Visualização de Projetos' : 'Visualização de Tarefas' }}
+         </div>
+       </ion-card-content>
+     </ion-card>
+   </div>
+
+   <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Carregando dados...</p>
+  </div>
+
+  <!-- Visualização de Projetos -->
+  <div *ngIf="!loading && viewMode === 'projeto'">
+    <ion-card *ngFor="let projeto of projetos" class="projeto-card">
+          <ion-card-header>
+      <ion-card-title>
+        {{ projeto.nome }}
+        <ion-badge 
+          *ngIf="projeto.status" 
+          [color]="getStatusColor(projeto.status)"
+          class="status-badge">
+          {{ projeto.status }}
+        </ion-badge>
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+                 <p *ngIf="projeto.descricao && visualizacaoDetalhada" class="descricao">{{ projeto.descricao }}</p>
+         
+         <ion-grid class="projeto-info" *ngIf="visualizacaoDetalhada">
+           <ion-row>
+             <ion-col size="6">
+               <ion-chip *ngIf="projeto.data" color="primary">
+                 <ion-label>Início: {{ formatarData(projeto.data) }}</ion-label>
+               </ion-chip>
+             </ion-col>
+             <ion-col size="6">
+               <ion-chip *ngIf="projeto.fim" color="secondary">
+                 <ion-label>Fim: {{ formatarData(projeto.fim) }}</ion-label>
+               </ion-chip>
+             </ion-col>
+           </ion-row>
+           <ion-row>
+             <ion-col size="6">
+               <ion-chip *ngIf="projeto.prioridade" [color]="getPrioridadeColor(projeto.prioridade)">
+                 <ion-label>Prioridade: {{ getPrioridadeNome(projeto.prioridade) }}</ion-label>
+               </ion-chip>
+             </ion-col>
+             <ion-col size="6">
+               <ion-chip *ngIf="projeto.tipo" color="medium">
+                 <ion-label>{{ projeto.tipo }}</ion-label>
+               </ion-chip>
+             </ion-col>
+           </ion-row>
+         </ion-grid>
+
+        <!-- Barra de Progresso do Projeto -->
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getProgressoProjeto(projeto)"></div>
+          </div>
+          <span class="progress-text">{{ getProgressoProjeto(projeto) }}%</span>
+        </div>
+
+        <!-- Tarefas do Projeto -->
+        <div class="tarefas-projeto" *ngIf="getTarefasProjeto(projeto.id).length > 0">
+          <h4>Tarefas do Projeto</h4>
+          <ion-list>
+            <ion-item *ngFor="let tarefa of getTarefasProjeto(projeto.id)" class="tarefa-item">
+              <ion-label>
+                <h3>{{ tarefa.nome }}</h3>
+                <p *ngIf="tarefa.descricao">{{ tarefa.descricao }}</p>
+                <div class="tarefa-meta">
+                  <ion-badge [color]="getStatusColor(tarefa.status)">
+                    {{ tarefa.status }}
+                  </ion-badge>
+                  <ion-badge [color]="getPrioridadeColor(tarefa.prioridade)">
+                    {{ getPrioridadeNome(tarefa.prioridade) }}
+                  </ion-badge>
+                  <span *ngIf="tarefa.data" class="data-tarefa">
+                    {{ formatarData(tarefa.data) }}
+                  </span>
+                </div>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Visualização de Tarefas -->
+  <div *ngIf="!loading && viewMode === 'tarefas'">
+    <ion-card *ngFor="let tarefa of tarefasFiltradas" class="tarefa-card">
+      <ion-card-header>
+        <ion-card-title>
+          {{ tarefa.nome }}
+          <ion-badge 
+            [color]="getStatusColor(tarefa.status)"
+            class="status-badge">
+            {{ tarefa.status }}
+          </ion-badge>
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+                 <p *ngIf="tarefa.descricao && visualizacaoDetalhada" class="descricao">{{ tarefa.descricao }}</p>
+         
+         <ion-grid class="tarefa-info" *ngIf="visualizacaoDetalhada">
+           <ion-row>
+             <ion-col size="6">
+               <ion-chip *ngIf="tarefa.data" color="primary">
+                 <ion-label>Início: {{ formatarData(tarefa.data) }}</ion-label>
+               </ion-chip>
+             </ion-col>
+             <ion-col size="6">
+               <ion-chip *ngIf="tarefa.venc" color="warning">
+                 <ion-label>Vencimento: {{ formatarData(tarefa.venc) }}</ion-label>
+               </ion-chip>
+             </ion-col>
+           </ion-row>
+           <ion-row>
+             <ion-col size="6">
+               <ion-chip [color]="getPrioridadeColor(tarefa.prioridade)">
+                 <ion-label>Prioridade: {{ getPrioridadeNome(tarefa.prioridade) }}</ion-label>
+               </ion-chip>
+             </ion-col>
+             <ion-col size="6">
+               <ion-chip *ngIf="tarefa.proj" color="medium">
+                 <ion-label>{{ getProjetoNome(tarefa.proj) }}</ion-label>
+               </ion-chip>
+             </ion-col>
+           </ion-row>
+         </ion-grid>
+
+        <!-- Barra de Progresso da Tarefa -->
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getProgresso(tarefa)"></div>
+          </div>
+          <span class="progress-text">{{ getProgresso(tarefa) }}%</span>
+        </div>
+
+        <!-- Duração da Tarefa -->
+        <div *ngIf="tarefa.data" class="duracao-tarefa">
+          <ion-chip color="tertiary">
+            <ion-label>
+              Duração: {{ calcularDuracao(tarefa.data, tarefa.venc) }} dias
+            </ion-label>
+          </ion-chip>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Mensagem quando não há dados -->
+  <div *ngIf="!loading && tarefasFiltradas.length === 0 && viewMode === 'tarefas'" class="no-data">
+    <ion-card>
+              <ion-card-content class="text-center">
+          <ion-icon name="calendar-outline" size="large"></ion-icon>
+          <h3>Nenhuma tarefa encontrada</h3>
+          <p>Não há tarefas para o período selecionado.</p>
+        </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div *ngIf="!loading && projetos.length === 0 && viewMode === 'projeto'" class="no-data">
+    <ion-card>
+      <ion-card-content class="text-center">
+        <ion-icon name="folder-outline" size="large"></ion-icon>
+        <h3>Nenhum projeto encontrado</h3>
+        <p>Não há projetos para exibir.</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

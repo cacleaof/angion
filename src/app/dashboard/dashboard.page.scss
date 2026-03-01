@@ -80,6 +80,15 @@ ion-item p {
   font-weight: normal;
 }
 
+ion-button.diario {
+  --border-color: var(--ion-color-medium);  /* outline */
+  --background: var(--ion-color-light-shade);         /* texto/ícone */
+   margin-bottom: 12px;
+  height: 60px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
 .user-info {
   background: var(--ion-color-light);
   padding: 10px;

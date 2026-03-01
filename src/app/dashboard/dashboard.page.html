@@ -41,6 +41,16 @@
       >
         Agenda
       </ion-button>
+
+        <ion-button
+        *ngIf="isAdmin()"
+        expand="block"
+        class="diario"
+        (click)="navegarParaDiario()"
+        aria-label="Navegar para Diario"
+      >
+        Diario
+      </ion-button>
       <ion-button
         *ngIf="isAdmin()"
         expand="block"
@@ -89,6 +99,16 @@
       >
         Biblioteca
       </ion-button>
+
+      <ion-button
+        expand="block"
+        color="danger"
+        (click)="navegarParaGantt()"
+        class="nav-button"
+        aria-label="Navegar para Cronograma Gantt"
+      >
+        Cronograma Gantt
+      </ion-button>
     </div>
 
     <!-- Seção de Despesas Não Pagas - Apenas para Administradores -->
@@ -103,7 +123,7 @@
       >
         {{ loading ? 'Carregando...' : 'Atualizar' }}
       </ion-button>
-  <h3>Despesas com Pagamento Pendentes (Apenas Administradores)</h3>
+  <h3>Despesas com Pagamento Pendentes</h3>
       <div *ngIf="loading" class="loading">
         Carregando despesas...
       </div>
