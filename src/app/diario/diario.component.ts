@@ -65,7 +65,11 @@ export class DiarioComponent  implements OnInit {
   async addAtv() {
         const modal = await this.modalController.create({
           component: AddAtvComponent,
-          cssClass: 'addAtv-modal-class'
+          cssClass: 'addAtv-modal-class',
+           componentProps: {
+      projid: this.projeto.id,   
+      tarefaid: this.selTask.id
+    }
         });
         return await modal.present();
       }

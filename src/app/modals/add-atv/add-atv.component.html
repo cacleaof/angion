@@ -1,3 +1,106 @@
-<p>
-  add-atv works!
-</p>
+
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ editarAtv ? 'Editar Atividade' : 'Nova Atividade' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="fecharModal()" aria-label="Cancelar">Cancelar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <form (ngSubmit)="salvarAtv()">
+        <!-- Campo obrigatório primeiro -->
+        <ion-input
+          label="Nome da Atividade *"
+          [(ngModel)]="novaAtv.nome"
+          name="nome"
+          required
+          placeholder="Digite o nome da atividade"
+          class="required-field"
+        ></ion-input>
+        <ion-textarea
+          label="Descrição"
+          [(ngModel)]="novaAtv.descricao"
+          name="descricao"
+          placeholder="Digite a descrição da atividade (opcional)"
+          rows="3"
+        ></ion-textarea>
+
+        <!-- Observações -->
+        <ion-textarea
+          label="Observações"
+          [(ngModel)]="novaAtv.obs"
+          name="obs"
+          placeholder="Digite observações sobre a atividade (opcional)"
+          rows="3"
+        ></ion-textarea>
+       
+         
+        <!-- Linha com Prioridade e Status -->
+        <div class="form-row">
+          <ion-select
+            label="Prioridade"
+            [(ngModel)]="novaAtv.prioridade"
+            name="prioridade"
+            placeholder="Selecione a prioridade"
+            class="form-half"
+          >
+            <ion-select-option *ngFor="let prioridade of prioridades" [value]="prioridade.valor">
+              {{ prioridade.nome }}
+            </ion-select-option>
+          </ion-select>
+
+          <ion-select
+            label="Status"
+            [(ngModel)]="novaAtv.status"
+            name="status"
+            placeholder="Selecione o status"
+            class="form-half"
+          >
+            <ion-select-option *ngFor="let status of statusOptions" [value]="status">
+              {{ status }}
+            </ion-select-option>
+          </ion-select>
+        </div>
+
+        <!-- Linha com Data e Projeto -->
+        <div class="form-row">
+          <ion-input
+            label="Data"
+            [(ngModel)]="novaAtv.data"
+            name="data"
+            type="date"
+            placeholder="Selecione a data"
+            class="form-half"
+          ></ion-input>
+
+          <ion-select
+            label="Projeto"
+            [(ngModel)]="novaAtv.proj"
+            name="proj"
+            placeholder="Selecione o projeto"
+            class="form-half"
+          >
+            <ion-select-option value="">Nenhum projeto</ion-select-option>
+            <ion-select-option *ngFor="let projeto of projetos" [value]="projeto.id">
+              {{ projeto.nome }}
+            </ion-select-option>
+          </ion-select>
+        </div>
+
+          <!-- Informações adicionais -->
+        <div class="form-info">
+          <p><small>* Campos obrigatórios</small></p>
+          <p><small>Tipo: {{ novaAtv.tipo }}</small></p>
+          <p><small>Usuário ID: {{ novaAtv.uid }}</small></p>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="form-actions">
+          <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editarAtv ? 'Atualizar atividade' : 'Criar atividade'">
+            {{ editarAtv ? 'Atualizar' : 'Criar' }} Atividade
+          </ion-button>
+        </div>
+      </form>
+    </ion-content>

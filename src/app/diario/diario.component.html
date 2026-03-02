@@ -44,7 +44,7 @@
  @else {
    <ion-list *ngFor="let atv of atvs; let j = index">
   <h2  *ngIf="selTask.id==atv.task">
-  {{atv.nome}} - {{ atv.status}} - {{ atv.data | date:'dd/MM/yyyy' }}
+  {{atv.nome}} - {{ atv.descricao}} - {{ atv.status}} - {{ atv.data | date:'dd/MM/yyyy' }}
   </h2>
   </ion-list>
  }

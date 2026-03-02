@@ -1,14 +1,91 @@
 import { Component, OnInit } from '@angular/core';
-
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon, IonGrid, IonRow, IonCol, ModalController } from '@ionic/angular/standalone';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { Input } from '@angular/core';
 @Component({
   selector: 'app-add-atv',
+  standalone: true,
   templateUrl: './add-atv.component.html',
   styleUrls: ['./add-atv.component.scss'],
+   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon, CommonModule, FormsModule, IonGrid, IonRow, IonCol],
 })
 export class AddAtvComponent  implements OnInit {
+  editarAtv: any = null;
+  showModal: boolean = true;
+@Input() projid!: number;
+@Input() tarefaid!: number;
 
-  constructor() { }
+    novaAtv: any = {
+    nome: '',
+    descricao: '',
+    tipo: 'ATV',
+    uid: 1,
+    proj: this.projid,
+    task: this.tarefaid,
+    data: '',
+    status: 'PENDENTE',
+    prioridade: 2,
+    dep: '',
+    file: '',
+    obs: '',
+  };
+
+    // URL da API do environment
+    private apiUrl = environment.apiUrl;
+ 
+
+
+  projetos: any[] = [];
+    prioridades = [
+    { valor: 1, nome: 'Baixa' },
+    { valor: 2, nome: 'Média' },
+    { valor: 3, nome: 'Alta' },
+    { valor: 4, nome: 'Urgente' }
+  ];
+    statusOptions = ['PENDENTE', 'EM ANDAMENTO', 'CONCLUÍDA', 'CANCELADA'];
+
+  constructor(private modalCtrl: ModalController, private http: HttpClient,) { }
 
   ngOnInit() {}
+
+  fecharModal() {
+  this.modalCtrl.dismiss();
+}
+
+    async salvarAtv() {
+      // Formatar a data para o formato esperado pelo input date
+      let dataFormatada = '';
+      if (this.novaAtv.data) {
+        const data = new Date(this.novaAtv.data);
+        if (!isNaN(data.getTime())) {
+          dataFormatada = data.toISOString().split('T')[0];
+        }
+      } else {
+        dataFormatada = new Date().toISOString().split('T')[0]; // Data atual como padrão
+      }
+      
+      this.novaAtv = {
+        nome: this.novaAtv.nome || '',
+        descricao: this.novaAtv.descricao || '',
+        tipo: this.novaAtv.tipo || 'ATV',
+        uid: this.novaAtv.uid || 1,
+        proj: this.projid || '',
+        task: this.tarefaid || '',
+        data: dataFormatada, // Usar a data formatada
+        status: this.novaAtv.status || 'PENDENTE',
+        prioridade: this.novaAtv.prioridade || 2,
+        dep: this.novaAtv.dep || '',
+        file: this.novaAtv.file || '',
+        obs: this.novaAtv.obs || '',
+      };
+       // Criar nova Atividade
+              const response: any = await firstValueFrom(this.http.post(`${this.apiUrl}/atv/`, this.novaAtv));
+              console.log('Atividade criada:', this.novaAtv);
+                this.modalCtrl.dismiss();
+    }
 
 }
