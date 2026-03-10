@@ -76,6 +76,19 @@
           ></ion-input>
 
           <ion-select
+            label="Tarefa"
+            [(ngModel)]="novaAtv.task"
+            name="task"
+            placeholder="Selecione a tarefa"
+            class="form-half"
+          >
+            <ion-select-option value="">Nenhuma tarefa</ion-select-option>
+            <ion-select-option *ngFor="let tarefa of tarefas" [value]="tarefa.id">
+              {{ tarefa.nome }}
+            </ion-select-option>
+          </ion-select>
+
+          <ion-select
             label="Projeto"
             [(ngModel)]="novaAtv.proj"
             name="proj"

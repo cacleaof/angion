@@ -1,9 +1,9 @@
 <ion-header>
   <ion-toolbar>
      <ion-buttons slot="start">
-   <ion-button (click)="navegarParaHome()" color="primary" size="small" aria-label="Voltar para Home">
+      <ion-button (click)="navegarParaHome()" color="primary" size="small" aria-label="Voltar para Home">
         Home
-    </ion-button>
+      </ion-button>
     <ion-button (click)="mudarMostrarTodas()" color="tertiary" size="small" aria-label="Alternar tarefas ativas/todas">
        Selecionar {{ mostrarTodas ? 'Todas' : 'Ativas' }}
     </ion-button>
@@ -13,40 +13,39 @@
   </ion-buttons>
     <h2>{{ selTask ? selTask.nome : 'Nenhuma tarefa selecionada' }}</h2>
     <h2>{{ projeto?.nome || 'Nenhum projeto selecionado' }}</h2>
-    <div *ngIf="selTask !=null">
-    <ion-button (click)="addAtv()">Adicionar Atividade</ion-button>
-
-    </div>
-</ion-toolbar>
+      <div *ngIf="selTask !=null">
+        <ion-button (click)="addAtv()">Adicionar Atividade</ion-button>
+      </div>
+  </ion-toolbar>
 </ion-header>
 <ion-content [fullscreen]="true">
   @if(mostrarTA==true){
-  <ion-list *ngFor="let atv of atvs; let j = index">
-  {{atv.nome}} - {{ atv.status}} - {{ atv.data | date:'dd/MM/yyyy' }}
-  </ion-list>}
+    <ion-list *ngFor="let atv of atvs; let j = index">
+      {{atv.nome}} - {{ atv.status}} - {{ atv.data | date:'dd/MM/yyyy' }}
+    </ion-list>}
   @else{
-  @if(selTask==null){
- <ion-list *ngFor="let tarefa of tarefas; let i = index">
-  @if(mostrarTodas){
-    <h2 *ngIf="tarefa.status !== 'CONCLUÍDA'"> 
-    <ion-button  (click)="seleciona(tarefa)" color="primary" size="small">{{tarefa.nome}} - {{ tarefa.status}} - {{ tarefa.data | date:'dd/MM/yyyy' }}</ion-button>
-     <ion-button  color="tertiary" size="small">
-            Editar
-          </ion-button>
-  </h2>}
-  @else{
-    <h2><ion-button (click)="seleciona(tarefa)" color="primary" size="small">{{tarefa.nome}} - {{ tarefa.status}} - {{ tarefa.data | date:'dd/MM/yyyy' }}</ion-button>
-     <ion-button   color="tertiary" size="small">
-            Editar
-          </ion-button> </h2>}
- </ion-list>
- }
- @else {
-   <ion-list *ngFor="let atv of atvs; let j = index">
-  <h2  *ngIf="selTask.id==atv.task">
-  {{atv.nome}} - {{ atv.descricao}} - {{ atv.status}} - {{ atv.data | date:'dd/MM/yyyy' }}
-  </h2>
-  </ion-list>
- }
-}
- </ion-content>
+    @if(selTask==null){
+    <ion-list>
+      @for (tarefa of tarefas; track tarefa.id) {
+        @if(tarefa.status !== 'CONCLUÍDA'){
+          <h2>
+          <ion-button  (click)="seleciona(tarefa)" color="primary" size="small">{{tarefa.nome}} - {{ tarefa.status}} - {{ tarefa.data | date:'dd/MM/yyyy' }}</ion-button>
+          <ion-button  color="tertiary" size="small">Editar</ion-button>
+          </h2>}
+        @else{
+          @if(mostrarTodas==false){
+          <h2><ion-button (click)="seleciona(tarefa)" color="primary" size="small">{{tarefa.nome}} - {{ tarefa.status}} - {{ tarefa.data | date:'dd/MM/yyyy' }}</ion-button>
+          <ion-button   color="tertiary" size="small">Editar</ion-button> </h2>}}}
+    </ion-list>
+    }
+    @else {
+    <ion-list>
+      <ng-container *ngFor="let atv of atvs; let j = index">
+        <h2 *ngIf="selTask.id == atv.task">
+        <ion-button (click)="addAtv(atv)">   {{atv.nome}} - {{ atv.descricao}} - {{ atv.status}} - {{ atv.data | date:'dd/MM/yyyy' }}</ion-button>
+        </h2>
+      </ng-container>
+    </ion-list>
+    }
+  }
+</ion-content>

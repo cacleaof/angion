@@ -17,6 +17,7 @@ import { AddAtvComponent } from '../modals/add-atv/add-atv.component';
 export class DiarioComponent  implements OnInit {
   tarefas: any[] = [];
   atvs: any[] = [];
+  editarAtv: any = null;
   projetos: any[] = [];
   projeto: any = null;
  // URL da API do environment
@@ -62,13 +63,15 @@ export class DiarioComponent  implements OnInit {
     
   }
   
-  async addAtv() {
+  async addAtv(atv?: any) {
+    if(atv){ this.editarAtv = atv; console.log('Atividade selecionada para edição:', atv); }
         const modal = await this.modalController.create({
           component: AddAtvComponent,
           cssClass: 'addAtv-modal-class',
            componentProps: {
       projid: this.projeto.id,   
-      tarefaid: this.selTask.id
+      tarefaid: this.selTask.id,
+      atividade: atv ? atv : null
     }
         });
         return await modal.present();
