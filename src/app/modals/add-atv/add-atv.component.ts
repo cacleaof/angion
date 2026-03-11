@@ -14,13 +14,13 @@ import { Input } from '@angular/core';
    imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon, CommonModule, FormsModule, IonGrid, IonRow, IonCol],
 })
 export class AddAtvComponent  implements OnInit {
-  editarAtv: any = null;
   showModal: boolean = true;
   novaAtv: any;
    tarefas: any[] = [];
 @Input() projid!: number;
 @Input() tarefaid!: number;
 @Input() atividade!: any;
+@Input() editarAtv!: boolean;
 
 
     // URL da API do environment
@@ -58,6 +58,7 @@ export class AddAtvComponent  implements OnInit {
         obs: atv?.obs || ''
       };
      console.log('Ver se entrou dados na novaAtv:', this.novaAtv.nome);}
+     else{this.novaAtv = { proj: this.projid || '', task: this.tarefaid || '', data: dataFormatada, status: 'PENDENTE', prioridade: 2, dep: '', file: '', obs: '' }; }
       }
 
   fecharModal() {

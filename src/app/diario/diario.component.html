@@ -8,14 +8,32 @@
        Selecionar {{ mostrarTodas ? 'Todas' : 'Ativas' }}
     </ion-button>
     <ion-button (click)="listarTA()" color="secondary" size="small" aria-label="Alternar tarefas ou Atividades">
-       Selecionar {{ mostrarTA ? 'Tarefas' : 'Atividades' }}
+      {{ mostrarTA ? 'Tarefas' : 'Atividades' }}
     </ion-button>
   </ion-buttons>
-    <h2>{{ selTask ? selTask.nome : 'Nenhuma tarefa selecionada' }}</h2>
-    <h2>{{ projeto?.nome || 'Nenhum projeto selecionado' }}</h2>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="2">
+  <h4>Projeto
+      <ion-select>
+            <ion-select-option value="">Nenhum projeto</ion-select-option>
+            <ion-select-option *ngFor="let projeto of projetos" [value]="projeto.id">
+              {{ projeto.nome }}
+            </ion-select-option>
+      </ion-select>
+  </h4>
+      </ion-col>
+      <ion-col size="2">
+    <h4>{{ selTask ? selTask.nome : 'Nenhuma tarefa selecionada' }}</h4>
+    <h4>{{ projeto?.nome || 'Nenhum projeto selecionado' }}</h4>
+      </ion-col>
+      <ion-col size="2" class="ion-text-right">
       <div *ngIf="selTask !=null">
         <ion-button (click)="addAtv()">Adicionar Atividade</ion-button>
       </div>
+      </ion-col>
+      </ion-row>
+      </ion-grid>
   </ion-toolbar>
 </ion-header>
 <ion-content [fullscreen]="true">

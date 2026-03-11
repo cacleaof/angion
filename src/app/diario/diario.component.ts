@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonItem, IonList, IonContent, IonHeader, IonButton, IonToolbar, IonLabel, IonTitle, IonButtons, ModalController } from "@ionic/angular/standalone";
+import { IonItem, IonList, IonContent, IonHeader, IonButton, IonToolbar, IonLabel, IonTitle, IonButtons, IonSelect, ModalController, IonSelectOption, IonGrid, IonRow, IonCol } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
@@ -12,7 +12,7 @@ import { AddAtvComponent } from '../modals/add-atv/add-atv.component';
   templateUrl: './diario.component.html',
   styleUrls: ['./diario.component.scss'],
   standalone: true,
-  imports: [IonButtons, IonContent, IonList, IonItem, CommonModule, IonHeader, IonButton, IonToolbar, IonLabel, IonTitle],
+  imports: [IonRow, IonButtons, IonContent, IonList, IonSelect, IonSelectOption, CommonModule, IonHeader, IonButton, IonToolbar, IonLabel, IonTitle, IonGrid, IonCol],
 })
 export class DiarioComponent  implements OnInit {
   tarefas: any[] = [];
@@ -44,7 +44,7 @@ export class DiarioComponent  implements OnInit {
                public modalController: ModalController
   ){}
 
-  ngOnInit() {  this.loadTasks(); this.loadAtvs();}
+  ngOnInit() {  this.loadTasks(); this.loadAtvs(); this.loadProjs()}
 
     navegarParaHome() {
     this.router.navigate(['/dashboard']);
@@ -60,18 +60,18 @@ export class DiarioComponent  implements OnInit {
     this.selTask = tarefa || null;
     console.log('Tarefa selecionada:', tarefa.proj );
     this.loadProj(tarefa.proj);
-    
   }
   
   async addAtv(atv?: any) {
-    if(atv){ this.editarAtv = atv; console.log('Atividade selecionada para edição:', atv); }
+    if(atv){ this.editarAtv = true; console.log('Atividade selecionada para edição:', atv); }else{ this.editarAtv = false;}
         const modal = await this.modalController.create({
           component: AddAtvComponent,
           cssClass: 'addAtv-modal-class',
            componentProps: {
       projid: this.projeto.id,   
       tarefaid: this.selTask.id,
-      atividade: atv ? atv : null
+      atividade: atv ? atv : null,
+      editarAtv: this.editarAtv
     }
         });
         return await modal.present();
@@ -100,6 +100,14 @@ export class DiarioComponent  implements OnInit {
       const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/atvs`));
             this.atvs = Array.isArray(response) ? response : [];
              console.log('Atvs carregados:', this.atvs);
+    } catch (error) {
+      console.error('Erro:', error);
+    }  }
+    async loadProjs() {
+    try {
+      const response: any = await firstValueFrom(this.http.get(`${this.apiUrl}/projs`));
+            this.projetos = Array.isArray(response) ? response : [];
+             console.log('Projetos carregados:', this.projetos);
     } catch (error) {
       console.error('Erro:', error);
     }  }
