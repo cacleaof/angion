@@ -1,0 +1,19 @@
+/* Usamos uma classe específica para não quebrar outros badges do app */
+.badge-large {
+    /* Força o tamanho da fonte ignorando o padrão do badge */
+    --padding-top: 10px;
+    --padding-bottom: 10px;
+    --padding-start: 15px;
+    --padding-end: 15px;
+    
+    font-size: 14px !important; /* O !important aqui é necessário porque o Ionic injeta o tamanho no Shadow DOM */
+    font-weight: 500;
+    
+    height: 36px; /* Altura padrão do ion-button */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    vertical-align: middle;
+    margin-top: -4px; /* Ajuste fino de alinhamento vertical com o botão */
+}

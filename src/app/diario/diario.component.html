@@ -1,69 +1,65 @@
 <ion-header>
-  <ion-toolbar>
-     <ion-buttons slot="start">
-      <ion-button (click)="navegarParaHome()" color="primary" size="small" aria-label="Voltar para Home">
-        Home
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="navegarParaHome()">Home
+        <ion-icon slot="icon-only" name="home-outline"></ion-icon>
       </ion-button>
-    <ion-button (click)="mudarMostrarTodas()" color="tertiary" size="small" aria-label="Alternar tarefas ativas/todas">
-       Selecionar {{ mostrarTodas ? 'Todas' : 'Ativas' }}
-    </ion-button>
-    <ion-button (click)="listarTA()" color="secondary" size="small" aria-label="Alternar tarefas ou Atividades">
-      {{ mostrarTA ? 'Tarefas' : 'Atividades' }}
-    </ion-button>
-  </ion-buttons>
-  <ion-grid>
-    <ion-row>
-      <ion-col size="2">
-  <h4>Projeto
-      <ion-select>
-            <ion-select-option value="">Nenhum projeto</ion-select-option>
-            <ion-select-option *ngFor="let projeto of projetos" [value]="projeto.id">
-              {{ projeto.nome }}
-            </ion-select-option>
+    </ion-buttons>
+    
+    <ion-title>Tarefas</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="mudarMostrarTodas()" fill="clear" size="small">
+        {{ mostrarTodas ? 'Todas' : 'Ativas' }}
+      </ion-button>
+      <ion-button (click)="listarTA()" fill="clear" size="small">
+        {{ mostrarTA ? 'Tarefas' : 'Ativ.' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar color="light">
+    <ion-item lines="none" color="light">
+      <ion-label position="stacked">Projeto</ion-label>
+      <ion-select placeholder="Selecione o Projeto">
+        <ion-select-option value="">Nenhum projeto</ion-select-option>
+        <ion-select-option *ngFor="let projeto of projetos" [value]="projeto.id">
+          {{ projeto.nome }}
+        </ion-select-option>
       </ion-select>
-  </h4>
-      </ion-col>
-      <ion-col size="2">
-    <h4>{{ selTask ? selTask.nome : 'Nenhuma tarefa selecionada' }}</h4>
-    <h4>{{ projeto?.nome || 'Nenhum projeto selecionado' }}</h4>
-      </ion-col>
-      <ion-col size="2" class="ion-text-right">
-      <div *ngIf="selTask !=null">
-        <ion-button (click)="addAtv()">Adicionar Atividade</ion-button>
-      </div>
-      </ion-col>
-      </ion-row>
-      </ion-grid>
+    </ion-item>
   </ion-toolbar>
 </ion-header>
+
 <ion-content [fullscreen]="true">
-  @if(mostrarTA==true){
-    <ion-list *ngFor="let atv of atvs; let j = index">
-      {{atv.nome}} - {{ atv.status}} - {{ atv.data | date:'dd/MM/yyyy' }}
-    </ion-list>}
-  @else{
-    @if(selTask==null){
-    <ion-list>
-      @for (tarefa of tarefas; track tarefa.id) {
-        @if(tarefa.status !== 'CONCLUÍDA'){
-          <h2>
-          <ion-button  (click)="seleciona(tarefa)" color="primary" size="small">{{tarefa.nome}} - {{ tarefa.status}} - {{ tarefa.data | date:'dd/MM/yyyy' }}</ion-button>
-          <ion-button  color="tertiary" size="small">Editar</ion-button>
-          </h2>}
-        @else{
-          @if(mostrarTodas==false){
-          <h2><ion-button (click)="seleciona(tarefa)" color="primary" size="small">{{tarefa.nome}} - {{ tarefa.status}} - {{ tarefa.data | date:'dd/MM/yyyy' }}</ion-button>
-          <ion-button   color="tertiary" size="small">Editar</ion-button> </h2>}}}
-    </ion-list>
-    }
-    @else {
-    <ion-list>
-      <ng-container *ngFor="let atv of atvs; let j = index">
-        <h2 *ngIf="selTask.id == atv.task">
-        <ion-button (click)="addAtv(atv)">   {{atv.nome}} - {{ atv.descricao}} - {{ atv.status}} - {{ atv.data | date:'dd/MM/yyyy' }}</ion-button>
-        </h2>
-      </ng-container>
-    </ion-list>
-    }
-  }
+  <div class="ion-padding" *ngIf="selTask">
+    <ion-badge color="secondary" class="badge-large">{{ selTask.nome }}</ion-badge>
+    <ion-button color="secondary" (click)="addAtv()">Adicionar Atividade</ion-button>
+    <ion-button fill="outline" size="small" (click)="addAtv()" style="float: right;">
+      + Atividade
+    </ion-button>
+</div>  
+
+  <ion-list *ngIf="mostrarTA">
+    <ion-item *ngFor="let atv of atvs">
+      <ion-label>
+        <h2>{{ atv.nome }}</h2>
+        <p>{{ atv.status }} | {{ atv.data | date:'dd/MM/yyyy' }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list *ngIf="!mostrarTA">
+    <ng-container *ngFor="let tarefa of tarefas">
+      <ion-item *ngIf="tarefa.status !== 'CONCLUÍDA' || mostrarTodas">
+        <ion-label (click)="seleciona(tarefa)">
+          <h2>{{ tarefa.nome }}</h2>
+          <p>{{ tarefa.status }} - {{ tarefa.data | date:'dd/MM/yyyy' }}</p>
+        </ion-label>
+        <ion-button slot="end" fill="clear" color="tertiary" size="small">
+          Editar
+        </ion-button>
+      </ion-item>
+    </ng-container>
+  </ion-list>
 </ion-content>

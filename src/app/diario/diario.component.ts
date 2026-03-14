@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonItem, IonList, IonContent, IonHeader, IonButton, IonToolbar, IonLabel, IonTitle, IonButtons, IonSelect, ModalController, IonSelectOption, IonGrid, IonRow, IonCol } from '@ionic/angular/standalone';
+import { IonList, IonBadge, IonIcon, IonItem, IonContent, IonHeader, IonButton, IonToolbar, IonLabel, IonTitle, IonButtons, IonSelect, ModalController, IonSelectOption, IonGrid, IonRow, IonCol } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
@@ -12,7 +12,7 @@ import { AddAtvComponent } from '../modals/add-atv/add-atv.component';
   templateUrl: './diario.component.html',
   styleUrls: ['./diario.component.scss'],
   standalone: true,
-  imports: [IonRow, IonButtons, IonContent, IonList, IonSelect, IonSelectOption, CommonModule, IonHeader, IonButton, IonToolbar, IonLabel, IonTitle, IonGrid, IonCol],
+  imports: [IonRow, IonBadge, IonButtons, IonContent, IonList, IonIcon, IonItem, IonSelect, IonSelectOption, CommonModule, IonHeader, IonButton, IonToolbar, IonLabel, IonTitle, IonGrid, IonCol],
 })
 export class DiarioComponent  implements OnInit {
   tarefas: any[] = [];
@@ -58,7 +58,7 @@ export class DiarioComponent  implements OnInit {
   
   seleciona(tarefa?: any) {
     this.selTask = tarefa || null;
-    console.log('Tarefa selecionada:', tarefa.proj );
+    console.log('Tarefa selecionada:', tarefa.proj, tarefa.nome );
     this.loadProj(tarefa.proj);
   }
   
