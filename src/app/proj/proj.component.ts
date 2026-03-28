@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonButton, IonButtons, IonModal, IonInput, IonTextarea, IonBadge } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonButton, IonButtons, IonModal, IonInput, IonTextarea, IonBadge, IonLabel, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: 'proj.component.html',
   styleUrls: ['proj.component.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonButton, IonButtons, IonModal, IonInput, IonTextarea, IonBadge, CommonModule, FormsModule],
+  imports: [IonLabel, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonButton, IonButtons, IonModal, IonInput, IonTextarea, IonBadge, IonSelect, IonSelectOption, CommonModule, FormsModule],
 })
 export class ProjComponent implements OnInit, OnDestroy {
   projetos: any[] = [];

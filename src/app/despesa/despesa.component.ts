@@ -1,25 +1,7 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { 
-  IonButton, 
-  IonContent, 
-  IonItem, 
-  IonLabel, 
-  IonList, 
-  IonModal, 
-  IonInput, 
-  IonHeader, 
-  IonToolbar, 
-  IonTitle, 
-  IonButtons, 
-  IonSelect, 
-  IonSelectOption, 
-  IonTextarea, 
-  IonIcon, 
-  IonProgressBar,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent
+  IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonHeader, IonToolbar, IonTitle, IonButtons, IonSelect, 
+  IonSelectOption, IonTextarea, IonIcon, IonProgressBar, IonCard, IonCardHeader, IonCardTitle, IonCardContent
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpEventType } from '@angular/common/http';
@@ -35,28 +17,9 @@ import { Router } from '@angular/router';
   styleUrls: ['./despesa.component.scss'],
   standalone: true,
   imports: [
-    IonButton, 
-    IonContent, 
-    IonItem, 
-    IonLabel, 
-    IonList, 
-    IonModal, 
-    IonInput, 
-    IonHeader, 
-    IonToolbar, 
-    IonTitle, 
-    IonButtons, 
-    IonSelect, 
-    IonSelectOption, 
-    IonTextarea, 
-    IonIcon, 
-    IonProgressBar,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
-    CommonModule, 
-    FormsModule
+    IonButton, IonContent, IonItem, IonLabel, IonList, IonModal, IonInput, IonHeader, IonToolbar, IonTitle, 
+    IonButtons, IonSelect, IonSelectOption, IonTextarea, IonIcon, IonProgressBar, IonCard, IonCardHeader, IonCardTitle, 
+    IonCardContent, CommonModule, FormsModule
   ],
 })
 export class DespesaComponent implements OnInit, AfterViewInit {

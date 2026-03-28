@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon, IonGrid, IonRow, IonCol, ModalController } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons, IonInput, IonTextarea, IonSelect, IonSelectOption, ModalController } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -11,7 +11,7 @@ import { Input } from '@angular/core';
   standalone: true,
   templateUrl: './add-atv.component.html',
   styleUrls: ['./add-atv.component.scss'],
-   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonCheckbox, IonModal, IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonIcon, CommonModule, FormsModule, IonGrid, IonRow, IonCol],
+   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons, IonInput, IonTextarea, IonSelect, IonSelectOption, CommonModule, FormsModule],
 })
 export class AddAtvComponent  implements OnInit {
   showModal: boolean = true;

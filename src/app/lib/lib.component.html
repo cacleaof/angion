@@ -6,24 +6,22 @@
       </ion-button>
     </ion-buttons>
     <ion-title>
-      <div class="title-content">
-        <span>Biblioteca</span>
-        <div class="search-container">
-          <ion-input
-            name="proc"
-            placeholder="Filtrar Dados"
-            
-            (ionInput)="filtrarPorBusca($event)"
-            clearInput="true"
-            class="search-input-inline"
-          ></ion-input>
-        </div>
-      </div>
+        <span>Biblioteca </span>
+        <ion-button (click)="addLib()" color="primary" aria-label="Adicionar Biblioteca" class="mobile-button">
+          Adicionar
+        </ion-button>
+        <ion-searchbar
+        placeholder="Buscar biblioteca..." 
+        (ionInput)="filtrarPorBusca($event)" 
+        debounce="300">
+        </ion-searchbar>
     </ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-list *ngFor="let lib of libs">
-<ion-item>
-{{ lib.nome }} {{ lib.descricao }} {{ lib.imagem }}
+<ion-list *ngFor="let lib of libsFiltradas">
+<ion-item (click)="selecionar(lib)">
+<h4>{{ lib.nome }}</h4>
+<p>- descricao: {{ lib.descricao }}</p>
+<a href="{{ lib.imagem }}" target="_blank"> -{{ lib.imagem }}</a>
 </ion-item>
 </ion-list>

@@ -1,0 +1,80 @@
+
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ editarLib ? 'Editar Biblioteca' : 'Nova Biblioteca' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="fecharModal()" aria-label="Cancelar">Cancelar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <form (ngSubmit)="salvarLib()">
+        <!-- Campo obrigatório primeiro -->
+        <ion-input
+          label="Nome da Atividade *"
+          [(ngModel)]="novaLib.nome"
+          name="nome"
+          required
+          placeholder="Digite o nome da atividade"
+          class="required-field"
+        ></ion-input>
+        <ion-textarea
+          label="Descrição"
+          [(ngModel)]="novaLib.descricao"
+          name="descricao"
+          placeholder="Digite a descrição da atividade (opcional)"
+          rows="3"
+        ></ion-textarea>
+          <ion-textarea
+          label="Imagem"
+          [(ngModel)]="novaLib.imagem"
+          name="imagem"
+          placeholder="Digite um link para a imagem da biblioteca (opcional)"
+          rows="3"
+        ></ion-textarea>
+            <ion-textarea
+          label="Arquivo"
+          [(ngModel)]="novaLib.file"
+          name="file"
+          placeholder="Inclua um arquivo relacionado à biblioteca (opcional)"
+          rows="3"
+        ></ion-textarea>
+
+            <div class="upload-area" 
+               (click)="triggerFileInput()"
+               (paste)="onPaste($event)"
+               tabindex="0">
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              style="display: none;"
+            />
+            <div *ngIf="!boletoImagePreview" class="upload-placeholder">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+              <p>Clique para selecionar uma imagem ou cole uma imagem (Ctrl+V)</p>
+            </div>
+            <div *ngIf="boletoImagePreview" class="image-preview">
+              <img [src]="boletoImagePreview" alt="Preview do boleto" />
+              <ion-button fill="clear" (click)="removerBoleto($event)" color="danger">
+                Remover
+              </ion-button>
+            </div>
+          </div>
+       
+
+          <!-- Informações adicionais -->
+        <div class="form-info">
+          <p><small>Usuário ID: {{ novaLib.uid }}</small></p>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="form-actions">
+          <ion-button expand="block" type="submit" color="primary" [attr.aria-label]="editarLib ? 'Atualizar biblioteca' : 'Criar biblioteca'">
+            {{ editarLib ? 'Atualizar' : 'Criar' }} Biblioteca
+          </ion-button>
+        </div>
+      </form>
+    </ion-content>

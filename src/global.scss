@@ -34,6 +34,15 @@
   --ion-color-primary-contrast-rgb: 255, 255, 255;
   --ion-color-primary-shade: #3171e0;
   --ion-color-primary-tint: #4c8dff;
+  --ion-color-primary: #3880ff;
+  /* ... suas outras variáveis do primary ... */
+
+  /* ADICIONE ESTAS CORES AQUI: */
+  --ion-color-secondary: #006666; /* Um verde escuro/teal para Atividades */
+  --ion-color-secondary-contrast: #ffffff;
+
+  --ion-color-tertiary: #5260ff; /* Um azul mais forte para Tarefas */
+  --ion-color-tertiary-contrast: #ffffff;
 }
 
 /* Foco visível para navegação por teclado */
@@ -93,6 +102,15 @@ ion-input, ion-textarea, ion-select {
   }
 }
 
+/* Isso vai forçar o texto a ser escuro, não importa o que aconteça */
+ion-item ion-label h2 {
+  color: #222222 !important; /* Quase preto */
+  font-weight: bold !important;
+}
+
+ion-item ion-label p {
+  color: #666666 !important; /* Cinza escuro */
+}
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
@@ -100,6 +118,6 @@ ion-input, ion-textarea, ion-select {
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+//@import "@ionic/angular/css/palettes/dark.always.css"; 
+@import "@ionic/angular/css/palettes/dark.class.css"; 
 @import '@ionic/angular/css/palettes/dark.system.css';

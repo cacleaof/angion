@@ -197,7 +197,17 @@
           placeholder="Digite a descrição do projeto"
           rows="3"
         ></ion-textarea>
-
+        <ion-toolbar color="light">
+          <ion-item lines="none" color="light">
+            <ion-label position="stacked">Projeto Pai/Dependente</ion-label>
+            <ion-select placeholder="Selecione o Projeto" [(ngModel)]="novoProjeto.dep" name="dep">
+            <ion-select-option value="">Nenhum projeto</ion-select-option>
+            <ion-select-option *ngFor="let projeto of projetos" [value]="projeto.id">
+            {{ projeto.nome }}
+            </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-toolbar>
         <ion-textarea
           label="Observações"
           [(ngModel)]="novoProjeto.obs"
